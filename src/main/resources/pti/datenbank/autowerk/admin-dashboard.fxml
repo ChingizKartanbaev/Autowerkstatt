@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Menu?>
-<?import javafx.scene.control.MenuBar?>
-<?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="pti.datenbank.autowerk.controllers.AdminController"
@@ -11,13 +9,101 @@
     <top>
         <MenuBar>
             <Menu text="File">
-                <MenuItem text="Logout"   onAction="#onLogout"/>
-                <MenuItem text="Exit"     onAction="#onExit"/>
+                <MenuItem text="Logout" onAction="#onLogout"/>
+                <MenuItem text="Exit" onAction="#onExit"/>
             </Menu>
         </MenuBar>
     </top>
     <center>
-        <Label text="Admin Dashboard"
-               style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+        <TabPane fx:id="tabPane">
+            <tabs>
+                <Tab text="Customers">
+                    <content>
+                        <VBox spacing="10">
+                            <padding>
+                                <Insets top="10" right="10" bottom="10" left="10"/>
+                            </padding>
+                            <HBox spacing="10">
+                                <Button text="Add Customer" onAction="#onAddCustomer"/>
+                                <Button text="Edit Customer" onAction="#onEditCustomer"/>
+                                <Button text="Delete Customer" onAction="#onDeleteCustomer"/>
+                            </HBox>
+                            <TableView fx:id="customerTable" prefHeight="400" prefWidth="780">
+                                <columns>
+                                    <TableColumn fx:id="colCustomerId" text="ID"/>
+                                    <TableColumn fx:id="colCustomerFullName" text="Full Name"/>
+                                    <TableColumn fx:id="colCustomerAddress" text="Address"/>
+                                    <TableColumn fx:id="colCustomerPhone" text="Phone"/>
+                                </columns>
+                            </TableView>
+                        </VBox>
+                    </content>
+                </Tab>
+                <Tab text="Mechanics">
+                    <content>
+                        <VBox spacing="10">
+                            <padding>
+                                <Insets top="10" right="10" bottom="10" left="10"/>
+                            </padding>
+                            <HBox spacing="10">
+                                <Button text="Add Mechanic" onAction="#onAddMechanic"/>
+                                <Button text="Edit Mechanic" onAction="#onEditMechanic"/>
+                                <Button text="Delete Mechanic" onAction="#onDeleteMechanic"/>
+                            </HBox>
+                            <TableView fx:id="mechanicTable" prefHeight="400" prefWidth="780">
+                                <columns>
+                                    <TableColumn fx:id="colMechanicId" text="ID"/>
+                                    <TableColumn fx:id="colMechanicFullName" text="Full Name"/>
+                                    <TableColumn fx:id="colMechanicSpeciality" text="Speciality"/>
+                                </columns>
+                            </TableView>
+                        </VBox>
+                    </content>
+                </Tab>
+                <Tab text="Service Types">
+                    <content>
+                        <VBox spacing="10">
+                            <padding>
+                                <Insets top="10" right="10" bottom="10" left="10"/>
+                            </padding>
+                            <HBox spacing="10">
+                                <Button text="Add Service Type" onAction="#onAddServiceType"/>
+                                <Button text="Edit Service Type" onAction="#onEditServiceType"/>
+                                <Button text="Delete Service Type" onAction="#onDeleteServiceType"/>
+                            </HBox>
+                            <TableView fx:id="serviceTypeTable" prefHeight="400" prefWidth="780">
+                                <columns>
+                                    <TableColumn fx:id="colServiceTypeId" text="ID"/>
+                                    <TableColumn fx:id="colServiceTypeName" text="Name"/>
+                                    <TableColumn fx:id="colServiceTypeDescription" text="Description"/>
+                                </columns>
+                            </TableView>
+                        </VBox>
+                    </content>
+                </Tab>
+                <Tab text="Parts">
+                    <content>
+                        <VBox spacing="10">
+                            <padding>
+                                <Insets top="10" right="10" bottom="10" left="10"/>
+                            </padding>
+                            <HBox spacing="10">
+                                <Button text="Add Part" onAction="#onAddPart"/>
+                                <Button text="Edit Part" onAction="#onEditPart"/>
+                                <Button text="Delete Part" onAction="#onDeletePart"/>
+                            </HBox>
+                            <TableView fx:id="partTable" prefHeight="400" prefWidth="780">
+                                <columns>
+                                    <TableColumn fx:id="colPartId" text="ID"/>
+                                    <TableColumn fx:id="colPartName" text="Name"/>
+                                    <TableColumn fx:id="colPartUnitPrice" text="Unit Price"/>
+                                    <TableColumn fx:id="colPartInStockQty" text="In Stock Qty"/>
+                                </columns>
+                            </TableView>
+                        </VBox>
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
     </center>
 </BorderPane>

@@ -1,35 +1,159 @@
 package pti.datenbank.autowerk.controllers;
 
-import javafx.event.ActionEvent;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.ReadOnlyStringWrapper;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.MenuItem;
-
-import javafx.stage.Stage;
-import pti.datenbank.autowerk.HelloApplication;
+import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import pti.datenbank.autowerk.models.Customer;
+import pti.datenbank.autowerk.models.Mechanic;
+import pti.datenbank.autowerk.models.Part;
+import pti.datenbank.autowerk.models.ServiceType;
 import pti.datenbank.autowerk.services.AuthService;
+import pti.datenbank.autowerk.services.CustomerService;
+import pti.datenbank.autowerk.services.MechanicService;
+import pti.datenbank.autowerk.services.PartService;
+import pti.datenbank.autowerk.services.ServiceTypeService;
 
-public class AdminController {
+import java.net.URL;
+import java.sql.SQLException;
+import java.util.Optional;
+import java.util.ResourceBundle;
 
-    @FXML
-    private MenuItem logoutMenu;
-    @FXML
-    private MenuItem exitMenu;
+public class AdminController implements Initializable {
 
+    // ==== Services ==== //
     private AuthService authService;
+    private CustomerService customerService;
+    private MechanicService mechanicService;
+    private ServiceTypeService serviceTypeService;
+    private PartService partService;
 
+    // ==== Customers tab ==== //
+    @FXML private TableView<Customer> customerTable;
+    @FXML private TableColumn<Customer, Integer> colCustomerId;
+    @FXML private TableColumn<Customer, String> colCustomerFullName;
+    @FXML private TableColumn<Customer, String> colCustomerAddress;
+    @FXML private TableColumn<Customer, String> colCustomerPhone;
+
+    // ==== Mechanics tab ==== //
+    @FXML private TableView<Mechanic> mechanicTable;
+    @FXML private TableColumn<Mechanic, Integer> colMechanicId;
+    @FXML private TableColumn<Mechanic, String> colMechanicFullName;
+    @FXML private TableColumn<Mechanic, String> colMechanicSpeciality;
+
+    // ==== Service Types tab ==== //
+    @FXML private TableView<ServiceType> serviceTypeTable;
+    @FXML private TableColumn<ServiceType, Integer> colServiceTypeId;
+    @FXML private TableColumn<ServiceType, String> colServiceTypeName;
+    @FXML private TableColumn<ServiceType, String> colServiceTypeDescription;
+
+    // ==== Parts tab ==== //
+    @FXML private TableView<Part> partTable;
+    @FXML private TableColumn<Part, Integer> colPartId;
+    @FXML private TableColumn<Part, String> colPartName;
+    @FXML private TableColumn<Part, java.math.BigDecimal> colPartUnitPrice;
+    @FXML private TableColumn<Part, Integer> colPartInStockQty;
+
+    // ==== Data lists ==== //
+    private final ObservableList<Customer> customerList = FXCollections.observableArrayList();
+    private final ObservableList<Mechanic> mechanicList = FXCollections.observableArrayList();
+    private final ObservableList<ServiceType> serviceTypeList = FXCollections.observableArrayList();
+    private final ObservableList<Part> partList = FXCollections.observableArrayList();
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        initCustomerTable();
+        initMechanicTable();
+        initServiceTypeTable();
+        initPartTable();
+        // Data loaded after AuthService injection
+    }
+
+    /**
+     * Called by HelloApplication after login to inject services
+     */
     public void setAuthService(AuthService authService) {
         this.authService = authService;
+        this.customerService = new CustomerService(authService);
+        this.mechanicService = new MechanicService(authService);
+        this.serviceTypeService = new ServiceTypeService(authService);
+        this.partService = new PartService(authService);
+        try {
+            loadAllData();
+        } catch (SQLException e) {
+            showError("Error loading data: " + e.getMessage());
+        }
     }
 
-    @FXML
-    private void onLogout(ActionEvent event) {
-        authService.logout();
-        HelloApplication.showLogin();
+    private void initCustomerTable() {
+        colCustomerId.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getCustomerId()));
+        colCustomerFullName.setCellValueFactory(cell -> new ReadOnlyStringWrapper(cell.getValue().getFullName()));
+        colCustomerAddress.setCellValueFactory(cell -> new ReadOnlyStringWrapper(cell.getValue().getAddress()));
+        colCustomerPhone.setCellValueFactory(cell -> new ReadOnlyStringWrapper(cell.getValue().getPhone()));
+        customerTable.setItems(customerList);
     }
 
-    @FXML
-    private void onExit(ActionEvent event) {
-        Stage stage = (Stage) exitMenu.getParentPopup().getOwnerWindow();
-        stage.close();
+    private void initMechanicTable() {
+        colMechanicId.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getMechanicId()));
+        colMechanicFullName.setCellValueFactory(cell -> new ReadOnlyStringWrapper(cell.getValue().getFullName()));
+        colMechanicSpeciality.setCellValueFactory(cell -> new ReadOnlyStringWrapper(cell.getValue().getSpeciality()));
+        mechanicTable.setItems(mechanicList);
+    }
+
+    private void initServiceTypeTable() {
+        colServiceTypeId.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getServiceTypeId()));
+        colServiceTypeName.setCellValueFactory(cell -> new ReadOnlyStringWrapper(cell.getValue().getName()));
+        colServiceTypeDescription.setCellValueFactory(cell -> new ReadOnlyStringWrapper(cell.getValue().getDescription()));
+        serviceTypeTable.setItems(serviceTypeList);
+    }
+
+    private void initPartTable() {
+        colPartId.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getPartId()));
+        colPartName.setCellValueFactory(cell -> new ReadOnlyStringWrapper(cell.getValue().getName()));
+        colPartUnitPrice.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getUnitPrice()));
+        colPartInStockQty.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getInStockQty()));
+        partTable.setItems(partList);
+    }
+
+    private void loadAllData() throws SQLException {
+        customerList.setAll(customerService.findAll());
+        mechanicList.setAll(mechanicService.findAll());
+        serviceTypeList.setAll(serviceTypeService.findAll());
+        partList.setAll(partService.findAll());
+    }
+
+    // ==== Actions ==== //
+    @FXML private void onAddCustomer() { /* ... */ }
+    @FXML private void onEditCustomer() { /* ... */ }
+    @FXML private void onDeleteCustomer() { /* ... */ }
+    @FXML private void onAddMechanic() { /* ... */ }
+    @FXML private void onEditMechanic() { /* ... */ }
+    @FXML private void onDeleteMechanic() { /* ... */ }
+    @FXML private void onAddServiceType() { /* ... */ }
+    @FXML private void onEditServiceType() { /* ... */ }
+    @FXML private void onDeleteServiceType() { /* ... */ }
+    @FXML private void onAddPart() { /* ... */ }
+    @FXML private void onEditPart() { /* ... */ }
+    @FXML private void onDeletePart() { /* ... */ }
+    @FXML private void onLogout() { authService.logout(); /* navigate to login */ }
+    @FXML private void onExit() { System.exit(0); }
+
+    // ==== Utils ==== //
+    private void showError(String msg) {
+        Alert alert = new Alert(Alert.AlertType.ERROR, msg, ButtonType.OK);
+        alert.showAndWait();
+    }
+
+    private boolean showConfirmation(String title, String msg) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION, msg, ButtonType.YES, ButtonType.NO);
+        alert.setTitle(title);
+        Optional<ButtonType> result = alert.showAndWait();
+        return result.isPresent() && result.get() == ButtonType.YES;
     }
 }
