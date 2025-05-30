@@ -5,11 +5,16 @@ import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import pti.datenbank.autowerk.models.Customer;
 import pti.datenbank.autowerk.models.Mechanic;
 import pti.datenbank.autowerk.models.Part;
@@ -19,6 +24,7 @@ import pti.datenbank.autowerk.services.CustomerService;
 import pti.datenbank.autowerk.services.MechanicService;
 import pti.datenbank.autowerk.services.PartService;
 import pti.datenbank.autowerk.services.ServiceTypeService;
+import pti.datenbank.autowerk.services.facade.UserFacade;
 
 import java.net.URL;
 import java.sql.SQLException;
@@ -33,6 +39,7 @@ public class AdminController implements Initializable {
     private MechanicService mechanicService;
     private ServiceTypeService serviceTypeService;
     private PartService partService;
+    private UserFacade userFacade;
 
     // ==== Customers tab ==== //
     @FXML private TableView<Customer> customerTable;
@@ -84,6 +91,7 @@ public class AdminController implements Initializable {
         this.mechanicService = new MechanicService(authService);
         this.serviceTypeService = new ServiceTypeService(authService);
         this.partService = new PartService(authService);
+        this.userFacade = new UserFacade(authService);
         try {
             loadAllData();
         } catch (SQLException e) {
@@ -129,7 +137,45 @@ public class AdminController implements Initializable {
     }
 
     // ==== Actions ==== //
-    @FXML private void onAddCustomer() { /* ... */ }
+
+    @FXML
+    private void onAddCustomer() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/pti/datenbank/autowerk/customer-user-dialog.fxml")
+            );
+            Parent page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Создать пользователя-клиента");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(customerTable.getScene().getWindow());
+            dialogStage.setScene(new Scene(page));
+
+            CustomerUserDialogController ctrl = loader.getController();
+            ctrl.setServices(authService, userFacade);
+            ctrl.setDialogStage(dialogStage);
+
+            dialogStage.showAndWait();
+
+            if (ctrl.isOkClicked()) {
+                loadCustomers();
+            }
+        } catch (Exception e) {
+            showError("Не удалось открыть диалог создания клиента:\n" + e.getMessage());
+        }
+    }
+
+
+    private void loadCustomers() {
+        try {
+            customerList.setAll(customerService.findAll());
+        } catch (SQLException e) {
+            showError("Не удалось загрузить список клиентов: " + e.getMessage());
+        }
+    }
+
+
     @FXML private void onEditCustomer() { /* ... */ }
     @FXML private void onDeleteCustomer() { /* ... */ }
     @FXML private void onAddMechanic() { /* ... */ }
