@@ -17,18 +17,15 @@ public class MainController {
 
     private AuthService authService;
 
-
     public void setAuthService(AuthService authService) {
         this.authService = authService;
     }
-
 
     @FXML
     private void onLogout(ActionEvent event) {
         authService.logout();
         HelloApplication.showLogin();
     }
-
 
     @FXML
     private void onExit(ActionEvent event) {

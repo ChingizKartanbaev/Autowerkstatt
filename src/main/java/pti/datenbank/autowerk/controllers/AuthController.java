@@ -25,31 +25,21 @@ public class AuthController {
 
     private AuthService authService;
 
-    /**
-     * Injects the AuthService.
-     */
     public void setAuthService(AuthService authService) {
         this.authService = authService;
     }
 
-    /**
-     * Initialize method called by FXMLLoader.
-     */
     @FXML
     private void initialize() {
         errorLabel.setText("");
     }
 
-    /**
-     * Called when the user clicks the Login button.
-     */
     @FXML
     private void handleLogin(ActionEvent event) {
         String username = usernameField.getText().trim();
         String password = passwordField.getText();
         try {
             if (authService.login(username, password)) {
-                // On successful login, show the main dashboard
                 HelloApplication.showByRole();
             } else {
                 errorLabel.setText("Invalid username or password.");
@@ -59,6 +49,4 @@ public class AuthController {
             e.printStackTrace();
         }
     }
-
 }
-

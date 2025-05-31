@@ -7,9 +7,6 @@ import javafx.stage.Stage;
 import pti.datenbank.autowerk.HelloApplication;
 import pti.datenbank.autowerk.services.AuthService;
 
-/**
- * Контроллер для окна механика.
- */
 public class MechanicController {
 
     @FXML private MenuItem logoutMenu;

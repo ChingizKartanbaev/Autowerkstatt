@@ -79,12 +79,8 @@ public class AdminController implements Initializable {
         initMechanicTable();
         initServiceTypeTable();
         initPartTable();
-        // Data loaded after AuthService injection
     }
 
-    /**
-     * Called by HelloApplication after login to inject services
-     */
     public void setAuthService(AuthService authService) {
         this.authService = authService;
         this.customerService = new CustomerService(authService);
@@ -147,7 +143,7 @@ public class AdminController implements Initializable {
             Parent page = loader.load();
 
             Stage dialogStage = new Stage();
-            dialogStage.setTitle("Создать пользователя-клиента");
+            dialogStage.setTitle("Create a client user");
             dialogStage.initModality(Modality.WINDOW_MODAL);
             dialogStage.initOwner(customerTable.getScene().getWindow());
             dialogStage.setScene(new Scene(page));
@@ -162,22 +158,89 @@ public class AdminController implements Initializable {
                 loadCustomers();
             }
         } catch (Exception e) {
-            showError("Не удалось открыть диалог создания клиента:\n" + e.getMessage());
+            showError("Failed to open the client creation dialog box:\n" + e.getMessage());
         }
     }
-
 
     private void loadCustomers() {
         try {
             customerList.setAll(customerService.findAll());
         } catch (SQLException e) {
-            showError("Не удалось загрузить список клиентов: " + e.getMessage());
+            showError("Failed to load the client list: " + e.getMessage());
         }
     }
 
+    @FXML
+    private void onEditCustomer() {
+        Customer selected = customerTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.initOwner(customerTable.getScene().getWindow());
+            alert.setTitle("There's no choice");
+            alert.setHeaderText("Client not selected");
+            alert.setContentText("Please select a client from the table.");
+            alert.showAndWait();
+            return;
+        }
 
-    @FXML private void onEditCustomer() { /* ... */ }
-    @FXML private void onDeleteCustomer() { /* ... */ }
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/pti/datenbank/autowerk/customer-user-dialog.fxml")
+            );
+            Parent page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Edit client user");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(customerTable.getScene().getWindow());
+            dialogStage.setScene(new Scene(page));
+
+            CustomerUserDialogController dialogCtrl = loader.getController();
+            dialogCtrl.setServices(authService, userFacade);
+            dialogCtrl.setDialogStage(dialogStage);
+            dialogCtrl.setEditingData(selected.getUser(), selected);
+
+            dialogStage.showAndWait();
+
+            if (dialogCtrl.isOkClicked()) {
+                loadCustomers();
+            }
+        } catch (Exception e) {
+            showError("Failed to edit client:\n" + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void onDeleteCustomer() {
+        Customer selected = customerTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.initOwner(customerTable.getScene().getWindow());
+            alert.setTitle("There's no choice");
+            alert.setHeaderText("Client not selected");
+            alert.setContentText("Please select a client from the table.");
+            alert.showAndWait();
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+                "Do you really want to remove the client \"" +
+                        selected.getFullName() + "\"?", ButtonType.YES, ButtonType.NO);
+        confirm.initOwner(customerTable.getScene().getWindow());
+        confirm.setTitle("Delete client");
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isEmpty() || result.get() != ButtonType.YES) {
+            return;
+        }
+
+        try {
+            userFacade.deleteCustomerUser(selected.getUser(), selected);
+            loadCustomers();
+        } catch (SQLException ex) {
+            showError("Failed to delete the client:\n" + ex.getMessage());
+        }
+    }
+
     @FXML private void onAddMechanic() { /* ... */ }
     @FXML private void onEditMechanic() { /* ... */ }
     @FXML private void onDeleteMechanic() { /* ... */ }

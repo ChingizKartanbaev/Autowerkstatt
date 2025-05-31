@@ -27,16 +27,32 @@ public class CustomerUserDialogController {
     private RoleService roleService;
     private AuthService authService;
     private boolean okClicked = false;
+    private User editingUser;
+    private Customer editingCustomer;
 
-    /** Вызывается из AdminController после загрузки FXML */
     public void setServices(AuthService authService, UserFacade userFacade) {
-        this.authService   = authService;
-        this.userFacade    = userFacade;
-        this.roleService   = new RoleService(authService);
+        this.authService = authService;
+        this.userFacade  = userFacade;
+        this.roleService = new RoleService(authService);
     }
 
     public void setDialogStage(Stage dialogStage) {
         this.dialogStage = dialogStage;
+    }
+
+    public void setEditingData(User user, Customer customer) {
+        this.editingUser     = user;
+        this.editingCustomer = customer;
+
+        if (user != null) {
+            tfUsername.setText(user.getUsername());
+            tfEmail.setText(user.getEmail());
+        }
+        if (customer != null) {
+            tfFullName.setText(customer.getFullName());
+            tfPhone.setText(customer.getPhone());
+            tfAddress.setText(customer.getAddress());
+        }
     }
 
     public boolean isOkClicked() {
@@ -45,52 +61,72 @@ public class CustomerUserDialogController {
 
     @FXML
     private void handleOk() {
-        String err = "";
-        if (tfUsername.getText().trim().isEmpty()) err += "– введите username\n";
-        if (pfPassword.getText().isEmpty())         err += "– введите пароль\n";
-        if (tfEmail.getText().trim().isEmpty())    err += "– введите email\n";
-        if (tfFullName.getText().trim().isEmpty()) err += "– введите полное имя\n";
-        if (tfPhone.getText().trim().isEmpty())    err += "– введите телефон\n";
-        if (tfAddress.getText().trim().isEmpty())  err += "– введите адрес\n";
+        StringBuilder err = new StringBuilder();
+        if (tfUsername.getText().trim().isEmpty()) err.append("– enter username\n");
+        if (editingUser == null && pfPassword.getText().isEmpty()) err.append("– enter the password\n");
+        if (tfEmail.getText().trim().isEmpty()) err.append("– enter email\n");
+        if (tfFullName.getText().trim().isEmpty()) err.append("– enter a full name\n");
+        if (tfPhone.getText().trim().isEmpty()) err.append("– enter phone number\n");
+        if (tfAddress.getText().trim().isEmpty()) err.append("– enter an address\n");
 
-        if (!err.isEmpty()) {
+        if (err.length() > 0) {
             Alert a = new Alert(Alert.AlertType.WARNING);
             a.initOwner(dialogStage);
-            a.setTitle("Неверные данные");
-            a.setHeaderText("Пожалуйста, исправьте:");
-            a.setContentText(err);
+            a.setTitle("Incorrect data");
+            a.setHeaderText("Please correct:");
+            a.setContentText(err.toString());
             a.showAndWait();
             return;
         }
 
         try {
-            // 1) Собираем User
-            User user = new User();
-            user.setUsername(tfUsername.getText().trim());
-            user.setPassword(pfPassword.getText());
-            user.setEmail(tfEmail.getText().trim());
-            // подтягиваем роль Customer
-            Role customerRole = roleService.findAll().stream()
-                    .filter(r -> "Customer".equals(r.getRoleName()))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalStateException("Role 'Customer' not found"));
-            user.setRole(customerRole);
+            User userToSave;
+            if (editingUser == null) {
+                userToSave = new User();
+                userToSave.setUsername(tfUsername.getText().trim());
+                userToSave.setPassword(pfPassword.getText());
+                userToSave.setEmail(tfEmail.getText().trim());
+                Role customerRole = roleService.findAll().stream()
+                        .filter(r -> "Customer".equals(r.getRoleName()))
+                        .findFirst()
+                        .orElseThrow(() -> new IllegalStateException("Role 'Customer' not found"));
+                userToSave.setRole(customerRole);
+            } else {
+                userToSave = editingUser;
+                userToSave.setUsername(tfUsername.getText().trim());
+                if (!pfPassword.getText().isEmpty()) {
+                    userToSave.setPassword(pfPassword.getText());
+                }
+                userToSave.setEmail(tfEmail.getText().trim());
+            }
 
-            // 2) Собираем Customer-профиль
-            Customer profile = new Customer();
-            profile.setFullName(tfFullName.getText().trim());
-            profile.setPhone(tfPhone.getText().trim());
-            profile.setAddress(tfAddress.getText().trim());
+            Customer custToSave;
+            if (editingCustomer == null) {
+                custToSave = new Customer();
+                custToSave.setUser(userToSave);
+                custToSave.setFullName(tfFullName.getText().trim());
+                custToSave.setPhone(tfPhone.getText().trim());
+                custToSave.setAddress(tfAddress.getText().trim());
+            } else {
+                custToSave = editingCustomer;
+                custToSave.setFullName(tfFullName.getText().trim());
+                custToSave.setPhone(tfPhone.getText().trim());
+                custToSave.setAddress(tfAddress.getText().trim());
+            }
 
-            // 3) Вызываем фасад для транзакционного создания
-            userFacade.createCustomerUser(user, profile);
+            if (editingUser == null) {
+                userFacade.createCustomerUser(userToSave, custToSave);
+            } else {
+                userFacade.updateCustomerUser(userToSave, custToSave);
+            }
 
             okClicked = true;
             dialogStage.close();
+
         } catch (SQLException ex) {
             Alert a = new Alert(Alert.AlertType.ERROR);
             a.initOwner(dialogStage);
-            a.setTitle("Ошибка при сохранении");
+            a.setTitle("Error when saving");
             a.setHeaderText(null);
             a.setContentText(ex.getMessage());
             a.showAndWait();

@@ -22,17 +22,12 @@ public class UserFacade extends BaseService {
         this.mechanicService  = new MechanicService(authService);
     }
 
-    /**
-     * Создаёт пользователя с ролью Customer и профиль Customer.
-     */
     public void createCustomerUser(User user, Customer profile) throws SQLException {
         checkPermission(Permission.CREATE);
         try (Connection conn = DBConnection.getConnection()) {
             conn.setAutoCommit(false);
             try {
-                // 1) Сначала Users
                 userService.create(user);
-                // 2) Потом Customer, привязываем по сгенерированному userID
                 profile.setUser(user);
                 customerService.create(profile);
                 conn.commit();
@@ -45,9 +40,40 @@ public class UserFacade extends BaseService {
         }
     }
 
-    /**
-     * Создаёт пользователя с ролью Mechanic и профиль Mechanic.
-     */
+    public void updateCustomerUser(User user, Customer profile) throws SQLException {
+        checkPermission(Permission.UPDATE);
+        try (Connection conn = DBConnection.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                userService.update(user);
+                customerService.update(profile);
+                conn.commit();
+            } catch (SQLException ex) {
+                conn.rollback();
+                throw ex;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        }
+    }
+
+    public void deleteCustomerUser(User user, Customer customer) throws SQLException {
+        checkPermission(Permission.DELETE);
+        try (Connection conn = DBConnection.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                customerService.delete(customer.getCustomerId());
+                userService.delete(user.getUserId());
+                conn.commit();
+            } catch (SQLException ex) {
+                conn.rollback();
+                throw ex;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        }
+    }
+
     public void createMechanicUser(User user, Mechanic profile) throws SQLException {
         checkPermission(Permission.CREATE);
         try (Connection conn = DBConnection.getConnection()) {
