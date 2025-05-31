@@ -10,9 +10,14 @@ import java.util.List;
 
 public class CustomerService extends BaseService {
     private final CustomerDao dao = new CustomerDaoImpl();
+    private final VehicleService vehicleService;
+    private final AppointmentService appointmentService;
+
 
     public CustomerService(AuthService authService) {
         super(authService);
+        this.vehicleService = new VehicleService(authService);
+        this.appointmentService = new AppointmentService(authService);
     }
 
     public Customer findById(int id) throws SQLException {
@@ -40,8 +45,17 @@ public class CustomerService extends BaseService {
         dao.update(customer);
     }
 
-    public void delete(int id) throws SQLException {
+    public void delete(int customerId) throws SQLException {
         checkPermission(Permission.DELETE);
-        dao.delete(id);
+
+        if (vehicleService.hasAnyVehicle(customerId)) {
+            throw new SQLException("Unable to delete a client: it has tethered machines.");
+        }
+
+//        if (appointmentService.hasAnyAppointmentForCustomer(customerId)) {
+//            throw new SQLException("Невозможно удалить клиента: у него есть записи на ремонт.");
+//        }
+
+        dao.delete(customerId);
     }
 }

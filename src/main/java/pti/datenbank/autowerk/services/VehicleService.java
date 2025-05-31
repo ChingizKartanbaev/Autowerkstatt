@@ -44,5 +44,10 @@ public class VehicleService extends BaseService {
         checkPermission(Permission.DELETE);
         dao.delete(id);
     }
+
+    public boolean hasAnyVehicle(int customerId) throws SQLException {
+        List<Vehicle> list = dao.findByCustomerId(customerId);
+        return (list != null && !list.isEmpty());
+    }
 }
 

@@ -1,3 +1,5 @@
+USE AutowerkstattDB
+
 -- Роли пользователей
 CREATE TABLE Roles (
                        RoleID    INT           IDENTITY PRIMARY KEY,
@@ -107,4 +109,18 @@ INSERT INTO Users (RoleID, Username, Password, Email) VALUES
     'mbrown',         -- логин механика
     'mechpass',
     'mbrown@example.com');
+GO
+
+INSERT INTO Customers(UserID, FullName, Phone, Address) VALUES
+((SELECT UserID FROM Users WHERE RoleID = 2),
+'John Doe',
+'123',
+'HZ'
+);
+GO
+
+INSERT INTO Mechanics(UserID, FullName, Speciality) VALUES
+((SELECT UserID FROM Users WHERE RoleID = 3),
+'Mr Brown',
+'Motors');
 GO
