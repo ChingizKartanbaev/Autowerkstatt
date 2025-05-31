@@ -104,6 +104,30 @@
                         </VBox>
                     </content>
                 </Tab>
+                <Tab text="Vehicles">
+                    <content>
+                        <VBox spacing="10">
+                            <padding>
+                                <Insets top="10" right="10" bottom="10" left="10"/>
+                            </padding>
+                            <HBox spacing="10">
+                                <Button text="Add Vehicle"    onAction="#onAddVehicle"/>
+                                <Button text="Edit Vehicle"   onAction="#onEditVehicle"/>
+                                <Button text="Delete Vehicle" onAction="#onDeleteVehicle"/>
+                            </HBox>
+                            <TableView fx:id="vehicleTable" prefHeight="400" prefWidth="780">
+                                <columns>
+                                    <TableColumn fx:id="colVehicleId"       text="ID"/>
+                                    <TableColumn fx:id="colVehicleCustomer" text="Customer"/>
+                                    <TableColumn fx:id="colVehicleMake"     text="Make"/>
+                                    <TableColumn fx:id="colVehicleModel"    text="Model"/>
+                                    <TableColumn fx:id="colVehiclePlate"    text="Plate Number"/>
+                                    <TableColumn fx:id="colVehicleYear"     text="Year"/>
+                                </columns>
+                            </TableView>
+                        </VBox>
+                    </content>
+                </Tab>
             </tabs>
         </TabPane>
     </center>

@@ -16,6 +16,7 @@ import javafx.scene.control.TableView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import pti.datenbank.autowerk.models.Customer;
+import pti.datenbank.autowerk.models.Vehicle;
 import pti.datenbank.autowerk.models.Mechanic;
 import pti.datenbank.autowerk.models.Part;
 import pti.datenbank.autowerk.models.ServiceType;
@@ -23,6 +24,7 @@ import pti.datenbank.autowerk.services.AuthService;
 import pti.datenbank.autowerk.services.CustomerService;
 import pti.datenbank.autowerk.services.MechanicService;
 import pti.datenbank.autowerk.services.PartService;
+import pti.datenbank.autowerk.services.VehicleService;
 import pti.datenbank.autowerk.services.ServiceTypeService;
 import pti.datenbank.autowerk.services.facade.UserFacade;
 
@@ -40,6 +42,7 @@ public class AdminController implements Initializable {
     private MechanicService mechanicService;
     private ServiceTypeService serviceTypeService;
     private PartService partService;
+    private VehicleService vehicleService;
     private UserFacade userFacade;
 
     // ==== Customers tab ==== //
@@ -69,11 +72,22 @@ public class AdminController implements Initializable {
     @FXML private TableColumn<Part, java.math.BigDecimal> colPartUnitPrice;
     @FXML private TableColumn<Part, Integer> colPartInStockQty;
 
+    // ==== Vehicles tab ==== //
+    @FXML private TableView<Vehicle> vehicleTable;
+    @FXML private TableColumn<Vehicle, Integer> colVehicleId;
+    @FXML private TableColumn<Vehicle, String> colVehicleCustomer;
+    @FXML private TableColumn<Vehicle, String> colVehicleMake;
+    @FXML private TableColumn<Vehicle, String> colVehicleModel;
+    @FXML private TableColumn<Vehicle, String> colVehiclePlate;
+    @FXML private TableColumn<Vehicle, Integer> colVehicleYear;
+
     // ==== Data lists ==== //
     private final ObservableList<Customer> customerList = FXCollections.observableArrayList();
     private final ObservableList<Mechanic> mechanicList = FXCollections.observableArrayList();
     private final ObservableList<ServiceType> serviceTypeList = FXCollections.observableArrayList();
     private final ObservableList<Part> partList = FXCollections.observableArrayList();
+    private final ObservableList<Vehicle> vehicleList = FXCollections.observableArrayList();
+
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -81,6 +95,7 @@ public class AdminController implements Initializable {
         initMechanicTable();
         initServiceTypeTable();
         initPartTable();
+        initVehicleTable();
     }
 
     public void setAuthService(AuthService authService) {
@@ -89,6 +104,7 @@ public class AdminController implements Initializable {
         this.mechanicService = new MechanicService(authService);
         this.serviceTypeService = new ServiceTypeService(authService);
         this.partService = new PartService(authService);
+        this.vehicleService  = new VehicleService(authService);
         this.userFacade = new UserFacade(authService);
         try {
             loadAllData();
@@ -128,11 +144,28 @@ public class AdminController implements Initializable {
         partTable.setItems(partList);
     }
 
+    private void initVehicleTable() {
+        colVehicleId.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getVehicleId()));
+        colVehicleCustomer.setCellValueFactory(cell -> {
+            if (cell.getValue().getCustomer() != null) {
+                return new ReadOnlyStringWrapper(cell.getValue().getCustomer().getFullName());
+            } else {
+                return new ReadOnlyStringWrapper("");
+            }
+        });
+        colVehicleMake.setCellValueFactory(cell -> new ReadOnlyStringWrapper(cell.getValue().getMake()));
+        colVehicleModel.setCellValueFactory(cell -> new ReadOnlyStringWrapper(cell.getValue().getModel()));
+        colVehiclePlate.setCellValueFactory(cell -> new ReadOnlyStringWrapper(cell.getValue().getLicensePlate()));
+        colVehicleYear.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getYear()));
+        vehicleTable.setItems(vehicleList);
+    }
+
     private void loadAllData() throws SQLException {
         loadCustomers();
         loadMechanics();
         loadServiceTypes();
         loadParts();
+        loadVehicles();
     }
 
     private void loadCustomers() {
@@ -164,6 +197,14 @@ public class AdminController implements Initializable {
             partList.setAll(partService.findAll());
         } catch (SQLException e) {
             showError("Не удалось загрузить список деталей:\n" + e.getMessage());
+        }
+    }
+
+    private void loadVehicles() {
+        try {
+            vehicleList.setAll(vehicleService.findAll());
+        } catch (SQLException e) {
+            showError("Не удалось загрузить список машин:\n" + e.getMessage());
         }
     }
 
@@ -543,7 +584,6 @@ public class AdminController implements Initializable {
         }
     }
 
-
     @FXML
     private void onDeletePart() {
         Part selected = partTable.getSelectionModel().getSelectedItem();
@@ -574,6 +614,108 @@ public class AdminController implements Initializable {
             showError("Failed to delete a part:\n" + ex.getMessage());
         }
     }
+
+    // ==== Vehicle === //
+
+    @FXML
+    private void onAddVehicle() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/pti/datenbank/autowerk/vehicle-dialog.fxml")
+            );
+            Parent page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Add Vehicle");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(vehicleTable.getScene().getWindow());
+            dialogStage.setScene(new Scene(page));
+
+            VehicleDialogController dialogCtrl = loader.getController();
+            dialogCtrl.setServices(authService, vehicleService, customerService);
+            dialogCtrl.setDialogStage(dialogStage);
+
+            dialogStage.showAndWait();
+
+            if (dialogCtrl.isOkClicked()) {
+                loadVehicles();
+            }
+        } catch (Exception e) {
+            showError("Failed to open the Create Machine dialog box:\n" + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void onEditVehicle() {
+        Vehicle selected = vehicleTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.initOwner(vehicleTable.getScene().getWindow());
+            alert.setTitle("There's no choice");
+            alert.setHeaderText("The car has not been selected");
+            alert.setContentText("Please select a machine from the table.");
+            alert.showAndWait();
+            return;
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/pti/datenbank/autowerk/vehicle-dialog.fxml")
+            );
+            Parent page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Edit Vehicle");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(vehicleTable.getScene().getWindow());
+            dialogStage.setScene(new Scene(page));
+
+            VehicleDialogController dialogCtrl = loader.getController();
+            dialogCtrl.setServices(authService, vehicleService, customerService);
+            dialogCtrl.setDialogStage(dialogStage);
+            dialogCtrl.setVehicle(selected);
+
+            dialogStage.showAndWait();
+
+            if (dialogCtrl.isOkClicked()) {
+                loadVehicles();
+            }
+        } catch (Exception e) {
+            showError("Failed to edit the vehicle:\n" + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void onDeleteVehicle() {
+        Vehicle selected = vehicleTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.initOwner(vehicleTable.getScene().getWindow());
+            alert.setTitle("There's no choice");
+            alert.setHeaderText("The car has not been selectead");
+            alert.setContentText("Please select a machine from the table.");
+            alert.showAndWait();
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+                "Do you really want to delete the machine (ID=" + selected.getVehicleId() +
+                        ") client \"" + selected.getCustomer().getFullName() + "\"?", ButtonType.YES, ButtonType.NO);
+        confirm.initOwner(vehicleTable.getScene().getWindow());
+        confirm.setTitle("Delete Vehicle");
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isEmpty() || result.get() != ButtonType.YES) {
+            return;
+        }
+
+        try {
+            vehicleService.delete(selected.getVehicleId());
+            loadVehicles();
+        } catch (SQLException ex) {
+            showError("Failed to delete the machine:\n" + ex.getMessage());
+        }
+    }
+
 
     @FXML private void onLogout() { authService.logout(); }
     @FXML private void onExit() { System.exit(0); }

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="pti.datenbank.autowerk.controllers.VehicleDialogController"
+      spacing="10" prefWidth="400" prefHeight="350"
+      style="-fx-background-color: white;">
+    <padding>
+        <Insets top="15" right="15" bottom="15" left="15"/>
+    </padding>
+
+    <Label text="Customer"/>
+    <ComboBox fx:id="cbCustomer"
+              promptText="Choose a client..."
+              prefWidth="300"/>
+
+    <Label text="Make"/>
+    <TextField fx:id="tfMake"/>
+
+    <Label text="Model"/>
+    <TextField fx:id="tfModel"/>
+
+    <Label text="Plate Number"/>
+    <TextField fx:id="tfPlate"/>
+
+    <Label text="Year"/>
+    <TextField fx:id="tfYear"/>
+
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button text="OK"     onAction="#handleOk"   prefWidth="80"/>
+        <Button text="Cancel" onAction="#handleCancel" prefWidth="80"/>
+    </HBox>
+</VBox>
