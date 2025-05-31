@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="pti.datenbank.autowerk.controllers.PartDialogController"
+      spacing="10" prefWidth="350" prefHeight="300">
+    <padding>
+        <Insets top="15" right="15" bottom="15" left="15"/>
+    </padding>
+
+    <!-- Поля для Part -->
+    <Label text="Name"/>
+    <TextField fx:id="tfName"/>
+
+    <Label text="Manufacturer"/>
+    <TextField fx:id="tfManufacturer"/>
+
+    <Label text="Unit Price"/>
+    <TextField fx:id="tfUnitPrice"/>
+
+    <Label text="In-Stock Quantity"/>
+    <TextField fx:id="tfInStockQty"/>
+
+    <!-- Кнопки OK / Cancel -->
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button text="OK"     onAction="#handleOk"/>
+        <Button text="Cancel" onAction="#handleCancel"/>
+    </HBox>
+</VBox>

@@ -132,7 +132,7 @@ public class AdminController implements Initializable {
         loadCustomers();
         loadMechanics();
         loadServiceTypes();
-        partList.setAll(partService.findAll());
+        loadParts();
     }
 
     private void loadCustomers() {
@@ -156,6 +156,14 @@ public class AdminController implements Initializable {
             serviceTypeList.setAll(serviceTypeService.findAll());
         } catch (SQLException e) {
             showError("Failed to load the Service type list:\n" + e.getMessage());
+        }
+    }
+
+    private void loadParts() {
+        try {
+            partList.setAll(partService.findAll());
+        } catch (SQLException e) {
+            showError("Не удалось загрузить список деталей:\n" + e.getMessage());
         }
     }
 
@@ -465,10 +473,109 @@ public class AdminController implements Initializable {
         }
     }
 
-    @FXML private void onAddPart() { /* ... */ }
-    @FXML private void onEditPart() { /* ... */ }
-    @FXML private void onDeletePart() { /* ... */ }
-    @FXML private void onLogout() { authService.logout(); /* navigate to login */ }
+    // ==== Part === //
+
+    @FXML
+    private void onAddPart() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/pti/datenbank/autowerk/part-dialog.fxml")
+            );
+            Parent page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Add Part");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(partTable.getScene().getWindow());
+            dialogStage.setScene(new Scene(page));
+
+            PartDialogController dialogCtrl = loader.getController();
+            dialogCtrl.setServices(authService, partService);
+            dialogCtrl.setDialogStage(dialogStage);
+
+            dialogStage.showAndWait();
+
+            if (dialogCtrl.isOkClicked()) {
+                loadParts();
+            }
+        } catch (Exception e) {
+            showError("Failed to open the dialog box for creating a part:\n" + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void onEditPart() {
+        Part selected = partTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.initOwner(partTable.getScene().getWindow());
+            alert.setTitle("There's no choice");
+            alert.setHeaderText("Part not selected");
+            alert.setContentText("Please select the line with the part.");
+            alert.showAndWait();
+            return;
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/pti/datenbank/autowerk/part-dialog.fxml")
+            );
+            Parent page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Edit Part");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(partTable.getScene().getWindow());
+            dialogStage.setScene(new Scene(page));
+
+            PartDialogController dialogCtrl = loader.getController();
+            dialogCtrl.setServices(authService, partService);
+            dialogCtrl.setDialogStage(dialogStage);
+            dialogCtrl.setPart(selected);
+
+            dialogStage.showAndWait();
+
+            if (dialogCtrl.isOkClicked()) {
+                loadParts();
+            }
+        } catch (Exception e) {
+            showError("Unable to edit the part:\n" + e.getMessage());
+        }
+    }
+
+
+    @FXML
+    private void onDeletePart() {
+        Part selected = partTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.initOwner(partTable.getScene().getWindow());
+            alert.setTitle("There's no choice");
+            alert.setHeaderText("Part not selected");
+            alert.setContentText("Please select the line with the part.");
+            alert.showAndWait();
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+                "Do you really want to remove the part \"" +
+                        selected.getName() + "\"?", ButtonType.YES, ButtonType.NO);
+        confirm.initOwner(partTable.getScene().getWindow());
+        confirm.setTitle("Delete Part");
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isEmpty() || result.get() != ButtonType.YES) {
+            return;
+        }
+
+        try {
+            partService.delete(selected.getPartId());
+            loadParts();
+        } catch (SQLException ex) {
+            showError("Failed to delete a part:\n" + ex.getMessage());
+        }
+    }
+
+    @FXML private void onLogout() { authService.logout(); }
     @FXML private void onExit() { System.exit(0); }
 
     // ==== Utils ==== //
