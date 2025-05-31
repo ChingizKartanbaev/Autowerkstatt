@@ -8,6 +8,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import pti.datenbank.autowerk.models.Customer;
+import pti.datenbank.autowerk.models.User;
 import pti.datenbank.autowerk.models.Vehicle;
 import pti.datenbank.autowerk.services.AuthService;
 import pti.datenbank.autowerk.services.CustomerService;
@@ -49,15 +50,18 @@ public class VehicleDialogController {
 
     public void setVehicle(Vehicle vehicle) {
         this.vehicle = vehicle;
-        if (vehicle != null) {
-            Customer cust = vehicle.getCustomer();
-            if (cust != null) {
-                cbCustomer.getSelectionModel().select(cust);
-            }
-            tfMake.setText(vehicle.getMake());
-            tfModel.setText(vehicle.getModel());
-            tfPlate.setText(vehicle.getLicensePlate());
-            tfYear.setText(String.valueOf(vehicle.getYear()));
+        tfMake.setText(vehicle.getMake());
+        tfModel.setText(vehicle.getModel());
+        tfPlate.setText(vehicle.getLicensePlate());
+        tfYear.setText(String.valueOf(vehicle.getYear()));
+
+        // Устанавливаем клиента в комбо:
+        cbCustomer.getSelectionModel().select(vehicle.getCustomer());
+
+        // Если текущий пользователь — Customer, запретим менять выбор:
+        User current = authService.getCurrentUser();
+        if (current.getRole().getRoleName().equals("Customer")) {
+            cbCustomer.setDisable(true);
         }
     }
 
@@ -66,10 +70,34 @@ public class VehicleDialogController {
     }
 
     private void loadCustomersIntoComboBox() {
+        User current = authService.getCurrentUser();
+        String roleName = current.getRole().getRoleName();
+
         try {
-            List<Customer> all = customerService.findAll();
-            customerList.setAll(all);
+            if ("Admin".equals(roleName)) {
+                // Админ видит всех клиентов
+                List<Customer> all = customerService.findAll();
+                customerList.setAll(all);
+            }
+            else if ("Customer".equals(roleName)) {
+                // Клиент видит только сам себя
+                Customer self = customerService.findByUserId(current.getUserId());
+                customerList.clear();
+                if (self != null) {
+                    customerList.add(self);
+                }
+                // Блокируем выбор, т.к. менять нельзя
+                cbCustomer.setDisable(true);
+            }
+            else {
+                // На всякий случай: если другая роль, ничего не показываем
+                customerList.clear();
+                cbCustomer.setDisable(true);
+            }
+
             cbCustomer.setItems(customerList);
+
+            // Настраиваем отображение fullName в ячейках выпадающего списка
             cbCustomer.setCellFactory(param -> new javafx.scene.control.ListCell<>() {
                 @Override
                 protected void updateItem(Customer item, boolean empty) {
@@ -81,6 +109,8 @@ public class VehicleDialogController {
                     }
                 }
             });
+
+            // Настраиваем отображение в выбранной (кнопочной) ячейке
             cbCustomer.setButtonCell(new javafx.scene.control.ListCell<>() {
                 @Override
                 protected void updateItem(Customer item, boolean empty) {
@@ -92,8 +122,17 @@ public class VehicleDialogController {
                     }
                 }
             });
+
+            // Если это клиент и список непустой, автоматически выбираем единственный элемент
+            if ("Customer".equals(roleName) && !customerList.isEmpty()) {
+                cbCustomer.getSelectionModel().selectFirst();
+            }
+
         } catch (SQLException ex) {
             ex.printStackTrace();
+            new Alert(Alert.AlertType.ERROR,
+                    "Ошибка при загрузке списка клиентов:\n" + ex.getMessage()
+            ).showAndWait();
         }
     }
 

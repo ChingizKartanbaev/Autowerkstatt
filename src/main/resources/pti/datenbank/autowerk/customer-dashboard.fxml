@@ -1,23 +1,116 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Menu?>
-<?import javafx.scene.control.MenuBar?>
-<?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.layout.BorderPane?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="pti.datenbank.autowerk.controllers.CustomerController"
             prefWidth="800" prefHeight="600">
+
     <top>
         <MenuBar>
             <Menu text="File">
-                <MenuItem text="Logout"   onAction="#onLogout"/>
-                <MenuItem text="Exit"     onAction="#onExit"/>
+                <MenuItem text="Logout" onAction="#onLogout"/>
+                <MenuItem text="Exit"   onAction="#onExit"/>
             </Menu>
         </MenuBar>
     </top>
+
     <center>
-        <Label text="Customer Dashboard"
-               style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+        <TabPane fx:id="tabPane">
+            <tabs>
+                <!-- Вкладка PROFILE -->
+                <Tab text="Profile">
+                    <content>
+                        <VBox spacing="10" alignment="TOP_LEFT">
+                            <padding>
+                                <Insets top="20" right="20" bottom="20" left="20"/>
+                            </padding>
+                            <Label text="My Profile" style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+
+                            <GridPane hgap="10" vgap="10">
+                                <columnConstraints>
+                                    <ColumnConstraints minWidth="100"/>
+                                    <ColumnConstraints minWidth="200" hgrow="ALWAYS"/>
+                                </columnConstraints>
+                                <rowConstraints>
+                                    <RowConstraints minHeight="30"/>
+                                    <RowConstraints minHeight="30"/>
+                                    <RowConstraints minHeight="30"/>
+                                </rowConstraints>
+
+                                <Label text="Full Name:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+                                <TextField fx:id="tfFullName" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+                                <Label text="Phone:"     GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+                                <TextField fx:id="tfPhone" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+                                <Label text="Address:"   GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+                                <TextField fx:id="tfAddress" GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+                            </GridPane>
+
+                            <HBox alignment="CENTER_RIGHT">
+                                <Button text="Save Profile" onAction="#onSaveProfile"/>
+                            </HBox>
+                        </VBox>
+                    </content>
+                </Tab>
+
+                <!-- Вкладка MY VEHICLES -->
+                <Tab text="My Vehicles">
+                    <content>
+                        <VBox spacing="10">
+                            <padding>
+                                <Insets top="10" right="10" bottom="10" left="10"/>
+                            </padding>
+
+                            <HBox spacing="10">
+                                <Button text="Add Vehicle"    onAction="#onAddVehicle"/>
+                                <Button text="Edit Vehicle"   onAction="#onEditVehicle"/>
+<!--                                <Button text="Delete Vehicle" onAction="#onDeleteVehicle"/>-->
+                            </HBox>
+
+                            <TableView fx:id="vehicleTable" prefHeight="400">
+                                <columns>
+                                    <TableColumn fx:id="colVehId"    text="ID"       prefWidth="50"/>
+                                    <TableColumn fx:id="colVehMake"  text="Make"     prefWidth="120"/>
+                                    <TableColumn fx:id="colVehModel" text="Model"    prefWidth="120"/>
+                                    <TableColumn fx:id="colVehPlate" text="Plate #"  prefWidth="100"/>
+                                    <TableColumn fx:id="colVehYear"  text="Year"     prefWidth="80"/>
+                                </columns>
+                            </TableView>
+                        </VBox>
+                    </content>
+                </Tab>
+
+                <!-- Вкладка MY APPOINTMENTS -->
+                <Tab text="My Appointments">
+                    <content>
+                        <VBox spacing="10">
+                            <padding>
+                                <Insets top="10" right="10" bottom="10" left="10"/>
+                            </padding>
+
+                            <HBox spacing="10">
+<!--                                <Button text="New Appointment"    onAction="#onAddAppointment"/>-->
+<!--                                <Button text="Edit Appointment"   onAction="#onEditAppointment"/>-->
+<!--                                <Button text="Cancel Appointment" onAction="#onCancelAppointment"/>-->
+<!--                                <Button text="View Details"       onAction="#onViewAppointmentDetails"/>-->
+                            </HBox>
+
+                            <TableView fx:id="appointmentTable" prefHeight="400">
+                                <columns>
+                                    <TableColumn fx:id="colAppId"       text="ID"       prefWidth="50"/>
+                                    <TableColumn fx:id="colAppVeh"      text="Vehicle"  prefWidth="120"/>
+                                    <TableColumn fx:id="colAppMech"     text="Mechanic" prefWidth="120"/>
+                                    <TableColumn fx:id="colAppDateTime" text="Date/Time" prefWidth="150"/>
+                                    <TableColumn fx:id="colAppStatus"   text="Status"   prefWidth="100"/>
+                                </columns>
+                            </TableView>
+                        </VBox>
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
     </center>
 </BorderPane>

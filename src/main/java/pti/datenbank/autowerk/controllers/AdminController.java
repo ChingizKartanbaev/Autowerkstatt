@@ -15,6 +15,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import pti.datenbank.autowerk.HelloApplication;
 import pti.datenbank.autowerk.models.Customer;
 import pti.datenbank.autowerk.models.Vehicle;
 import pti.datenbank.autowerk.models.Mechanic;
@@ -717,7 +718,10 @@ public class AdminController implements Initializable {
     }
 
 
-    @FXML private void onLogout() { authService.logout(); }
+    @FXML private void onLogout() {
+        authService.logout();
+        HelloApplication.showLogin();
+    }
     @FXML private void onExit() { System.exit(0); }
 
     // ==== Utils ==== //
