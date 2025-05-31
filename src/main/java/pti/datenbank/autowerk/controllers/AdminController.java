@@ -241,9 +241,115 @@ public class AdminController implements Initializable {
         }
     }
 
-    @FXML private void onAddMechanic() { /* ... */ }
-    @FXML private void onEditMechanic() { /* ... */ }
-    @FXML private void onDeleteMechanic() { /* ... */ }
+
+    private void loadMechanics() {
+        try {
+            mechanicList.setAll(mechanicService.findAll());
+        } catch (SQLException e) {
+            showError("Failed to load the list of mechanics:\n" + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void onAddMechanic() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/pti/datenbank/autowerk/mechanic-user-dialog.fxml")
+            );
+            Parent page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Create a mechanic user");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(mechanicTable.getScene().getWindow());
+            dialogStage.setScene(new Scene(page));
+
+            MechanicUserDialogController dialogCtrl = loader.getController();
+            dialogCtrl.setServices(authService, userFacade);
+            dialogCtrl.setDialogStage(dialogStage);
+
+            dialogStage.showAndWait();
+
+            if (dialogCtrl.isOkClicked()) {
+                loadMechanics();
+            }
+        } catch (Exception e) {
+            showError("Failed to open the mechanic creation dialog:\n" + e.getMessage());
+        }
+    }
+    @FXML
+    private void onEditMechanic() {
+        Mechanic selected = mechanicTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.initOwner(mechanicTable.getScene().getWindow());
+            alert.setTitle("There's no choice");
+            alert.setHeaderText("The mechanic is not selected");
+            alert.setContentText("Please select a mechanic from the table.");
+            alert.showAndWait();
+            return;
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/pti/datenbank/autowerk/mechanic-user-dialog.fxml")
+            );
+            Parent page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Edit user-mechanics");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(mechanicTable.getScene().getWindow());
+            dialogStage.setScene(new Scene(page));
+
+            MechanicUserDialogController dialogCtrl = loader.getController();
+            dialogCtrl.setServices(authService, userFacade);
+            dialogCtrl.setDialogStage(dialogStage);
+            dialogCtrl.setEditingData(selected.getUser(), selected);
+
+            dialogStage.showAndWait();
+
+            if (dialogCtrl.isOkClicked()) {
+                loadMechanics();
+            }
+        } catch (Exception e) {
+            showError("Failed to edit the mechanic:\n" + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void onDeleteMechanic() {
+        Mechanic selected = mechanicTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.initOwner(mechanicTable.getScene().getWindow());
+            alert.setTitle("There's no choice");
+            alert.setHeaderText("The mechanic is not selected");
+            alert.setContentText("Please select a mechanic from the table.");
+            alert.showAndWait();
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+                "Do you really want to remove the mechanics \"" +
+                        selected.getFullName() + "\"?", ButtonType.YES, ButtonType.NO);
+        confirm.initOwner(mechanicTable.getScene().getWindow());
+        confirm.setTitle("Remove the mechanic");
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isEmpty() || result.get() != ButtonType.YES) {
+            return;
+        }
+
+        try {
+            userFacade.deleteMechanicUser(selected.getUser(), selected);
+
+            loadMechanics();
+        } catch (SQLException ex) {
+            showError("Failed to remove the mechanic:\n" + ex.getMessage());
+        }
+    }
+
+
     @FXML private void onAddServiceType() { /* ... */ }
     @FXML private void onEditServiceType() { /* ... */ }
     @FXML private void onDeleteServiceType() { /* ... */ }

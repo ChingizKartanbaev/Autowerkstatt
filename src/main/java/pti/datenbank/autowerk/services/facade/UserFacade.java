@@ -91,4 +91,38 @@ public class UserFacade extends BaseService {
             }
         }
     }
+
+    public void updateMechanicUser(User user, Mechanic mech) throws SQLException {
+        checkPermission(Permission.UPDATE);
+        try (Connection conn = DBConnection.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                new UserService(authService).update(user);
+                new MechanicService(authService).update(mech);
+                conn.commit();
+            } catch (SQLException ex) {
+                conn.rollback();
+                throw ex;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        }
+    }
+
+    public void deleteMechanicUser(User user, Mechanic mechanic) throws SQLException {
+        checkPermission(Permission.DELETE);
+        try (Connection conn = DBConnection.getConnection()) {
+            conn.setAutoCommit(false);
+            try {
+                mechanicService.delete(mechanic.getMechanicId());
+                userService.delete(user.getUserId());
+                conn.commit();
+            } catch (SQLException ex) {
+                conn.rollback();
+                throw ex;
+            } finally {
+                conn.setAutoCommit(true);
+            }
+        }
+    }
 }

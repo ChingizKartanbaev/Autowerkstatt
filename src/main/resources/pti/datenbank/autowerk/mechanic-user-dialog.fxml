@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="pti.datenbank.autowerk.controllers.MechanicUserDialogController"
+      spacing="10" prefWidth="350" prefHeight="280">
+    <padding>
+        <Insets top="15" right="15" bottom="15" left="15"/>
+    </padding>
+
+    <!-- Поля для User -->
+    <Label text="Username"/>
+    <TextField fx:id="tfUsername"/>
+
+    <Label text="Password"/>
+    <PasswordField fx:id="pfPassword"/>
+
+    <Label text="Email"/>
+    <TextField fx:id="tfEmail"/>
+
+    <!-- Поля для Mechanic-профиля -->
+    <Label text="Full Name"/>
+    <TextField fx:id="tfFullName"/>
+
+    <Label text="Specialty"/>
+    <TextField fx:id="tfSpecialty"/>
+
+    <!-- Кнопки OK / Cancel -->
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button text="OK"     onAction="#handleOk"/>
+        <Button text="Cancel" onAction="#handleCancel"/>
+    </HBox>
+</VBox>
