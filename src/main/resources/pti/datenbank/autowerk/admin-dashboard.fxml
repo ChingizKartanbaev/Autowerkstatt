@@ -76,6 +76,7 @@
                                     <TableColumn fx:id="colServiceTypeId" text="ID"/>
                                     <TableColumn fx:id="colServiceTypeName" text="Name"/>
                                     <TableColumn fx:id="colServiceTypeDescription" text="Description"/>
+                                    <TableColumn fx:id="colServiceTypePrice"       text="Price"/>
                                 </columns>
                             </TableView>
                         </VBox>

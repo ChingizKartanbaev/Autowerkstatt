@@ -26,6 +26,7 @@ import pti.datenbank.autowerk.services.PartService;
 import pti.datenbank.autowerk.services.ServiceTypeService;
 import pti.datenbank.autowerk.services.facade.UserFacade;
 
+import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.Optional;
@@ -59,6 +60,7 @@ public class AdminController implements Initializable {
     @FXML private TableColumn<ServiceType, Integer> colServiceTypeId;
     @FXML private TableColumn<ServiceType, String> colServiceTypeName;
     @FXML private TableColumn<ServiceType, String> colServiceTypeDescription;
+    @FXML private TableColumn<ServiceType, BigDecimal> colServiceTypePrice;
 
     // ==== Parts tab ==== //
     @FXML private TableView<Part> partTable;
@@ -114,6 +116,7 @@ public class AdminController implements Initializable {
         colServiceTypeId.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getServiceTypeId()));
         colServiceTypeName.setCellValueFactory(cell -> new ReadOnlyStringWrapper(cell.getValue().getName()));
         colServiceTypeDescription.setCellValueFactory(cell -> new ReadOnlyStringWrapper(cell.getValue().getDescription()));
+        colServiceTypePrice.setCellValueFactory(c -> new ReadOnlyObjectWrapper<>(c.getValue().getBasePrice()));
         serviceTypeTable.setItems(serviceTypeList);
     }
 
@@ -126,14 +129,39 @@ public class AdminController implements Initializable {
     }
 
     private void loadAllData() throws SQLException {
-        customerList.setAll(customerService.findAll());
-        mechanicList.setAll(mechanicService.findAll());
-        serviceTypeList.setAll(serviceTypeService.findAll());
+        loadCustomers();
+        loadMechanics();
+        loadServiceTypes();
         partList.setAll(partService.findAll());
+    }
+
+    private void loadCustomers() {
+        try {
+            customerList.setAll(customerService.findAll());
+        } catch (SQLException e) {
+            showError("Failed to load the client list: " + e.getMessage());
+        }
+    }
+
+    private void loadMechanics() {
+        try {
+            mechanicList.setAll(mechanicService.findAll());
+        } catch (SQLException e) {
+            showError("Failed to load the list of mechanics:\n" + e.getMessage());
+        }
+    }
+
+    private void loadServiceTypes() {
+        try {
+            serviceTypeList.setAll(serviceTypeService.findAll());
+        } catch (SQLException e) {
+            showError("Failed to load the Service type list:\n" + e.getMessage());
+        }
     }
 
     // ==== Actions ==== //
 
+    // ==== Customer === //
     @FXML
     private void onAddCustomer() {
         try {
@@ -162,13 +190,6 @@ public class AdminController implements Initializable {
         }
     }
 
-    private void loadCustomers() {
-        try {
-            customerList.setAll(customerService.findAll());
-        } catch (SQLException e) {
-            showError("Failed to load the client list: " + e.getMessage());
-        }
-    }
 
     @FXML
     private void onEditCustomer() {
@@ -242,13 +263,7 @@ public class AdminController implements Initializable {
     }
 
 
-    private void loadMechanics() {
-        try {
-            mechanicList.setAll(mechanicService.findAll());
-        } catch (SQLException e) {
-            showError("Failed to load the list of mechanics:\n" + e.getMessage());
-        }
-    }
+    // ==== Mechanic === //
 
     @FXML
     private void onAddMechanic() {
@@ -349,10 +364,107 @@ public class AdminController implements Initializable {
         }
     }
 
+    // ==== ServiceType === //
 
-    @FXML private void onAddServiceType() { /* ... */ }
-    @FXML private void onEditServiceType() { /* ... */ }
-    @FXML private void onDeleteServiceType() { /* ... */ }
+    @FXML
+    private void onAddServiceType() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/pti/datenbank/autowerk/service-type-dialog.fxml")
+            );
+            Parent page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Add Service type");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(serviceTypeTable.getScene().getWindow());
+            dialogStage.setScene(new Scene(page));
+
+            ServiceTypeDialogController dialogCtrl = loader.getController();
+            dialogCtrl.setServices(authService, serviceTypeService);
+            dialogCtrl.setDialogStage(dialogStage);
+
+            dialogStage.showAndWait();
+
+            if (dialogCtrl.isOkClicked()) {
+                loadServiceTypes();
+            }
+        } catch (Exception e) {
+            showError("Failed to open the Service type creation dialog box:\n" + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void onEditServiceType() {
+        ServiceType selected = serviceTypeTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.initOwner(serviceTypeTable.getScene().getWindow());
+            alert.setTitle("There's no choice");
+            alert.setHeaderText("ServiceType not selected");
+            alert.setContentText("Please select a row in the table.");
+            alert.showAndWait();
+            return;
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/pti/datenbank/autowerk/service-type-dialog.fxml")
+            );
+            Parent page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Edit Service type");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(serviceTypeTable.getScene().getWindow());
+            dialogStage.setScene(new Scene(page));
+
+            ServiceTypeDialogController dialogCtrl = loader.getController();
+            dialogCtrl.setServices(authService, serviceTypeService);
+            dialogCtrl.setDialogStage(dialogStage);
+            dialogCtrl.setServiceType(selected);
+
+            dialogStage.showAndWait();
+
+            if (dialogCtrl.isOkClicked()) {
+                loadServiceTypes();
+            }
+        } catch (Exception e) {
+            showError("Failed to edit Service type:\n" + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void onDeleteServiceType() {
+        ServiceType selected = serviceTypeTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.initOwner(serviceTypeTable.getScene().getWindow());
+            alert.setTitle("There's no choice");
+            alert.setHeaderText("Service type not selected");
+            alert.setContentText("Please select a row in the table.");
+            alert.showAndWait();
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+                "Do you really want to delete Service type \"" +
+                        selected.getName() + "\"?", ButtonType.YES, ButtonType.NO);
+        confirm.initOwner(serviceTypeTable.getScene().getWindow());
+        confirm.setTitle("Delete Service type");
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isEmpty() || result.get() != ButtonType.YES) {
+            return;
+        }
+
+        try {
+            serviceTypeService.delete(selected.getServiceTypeId());
+            loadServiceTypes();
+        } catch (SQLException ex) {
+            showError("Failed to delete Service type:\n" + ex.getMessage());
+        }
+    }
+
     @FXML private void onAddPart() { /* ... */ }
     @FXML private void onEditPart() { /* ... */ }
     @FXML private void onDeletePart() { /* ... */ }
