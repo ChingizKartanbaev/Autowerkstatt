@@ -1,4 +1,4 @@
-USE AutowerkstattDB
+USE AutowerkstattDB;
 
 -- Роли пользователей
 CREATE TABLE Roles (
@@ -124,7 +124,56 @@ INSERT INTO Mechanics(UserID, FullName, Speciality) VALUES
 'Motors');
 GO
 
-INSERT INTO ServiceType(Name, Description, BasePrice) VALUES
-    ("Oil Change", "QWER", 100),
-    ("Wheel Alignment & Balancing", "QWER", 100),
-}
+-- Заполнение таблицы ServiceTypes
+INSERT INTO ServiceTypes (CreatedByUserID, Name, Description, BasePrice) VALUES
+    (
+        (SELECT UserID FROM Users WHERE Username = 'admin'),
+        N'Oil Change',
+        N'Полная замена моторного масла и масляного фильтра',
+        100.00
+    ),
+    (
+        (SELECT UserID FROM Users WHERE Username = 'admin'),
+        N'Wheel Alignment & Balancing',
+        N'Сход-развал и балансировка всех четырёх колёс',
+        150.00
+    ),
+    (
+        (SELECT UserID FROM Users WHERE Username = 'mbrown'),
+        N'Engine Diagnostics',
+        N'Компьютерная диагностика системы двигателя',
+        200.00
+    );
+GO
+
+-- Заполнение таблицы Parts
+INSERT INTO Parts (CreatedByUserID, Name, Manufacturer, UnitPrice, InStockQty) VALUES
+    (
+        (SELECT UserID FROM Users WHERE Username = 'admin'),
+        N'Oil Filter',
+        N'Bosch',
+        10.00,
+        50
+    ),
+    (
+        (SELECT UserID FROM Users WHERE Username = 'admin'),
+        N'Brake Pad Set',
+        N'Brembo',
+        45.00,
+        30
+    ),
+    (
+        (SELECT UserID FROM Users WHERE Username = 'mbrown'),
+        N'Air Filter',
+        N'Mann-Filter',
+        15.00,
+        40
+    ),
+    (
+        (SELECT UserID FROM Users WHERE Username = 'mbrown'),
+        N'Spark Plug',
+        N'NGK',
+        8.00,
+        100
+    );
+GO

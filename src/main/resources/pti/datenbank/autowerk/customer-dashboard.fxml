@@ -83,6 +83,7 @@
                     </content>
                 </Tab>
 
+                <!-- Вкладка MY Appointments -->
                 <Tab text="My Appointments">
                     <content>
                         <VBox spacing="10">

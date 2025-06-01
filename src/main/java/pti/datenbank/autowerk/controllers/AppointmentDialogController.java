@@ -82,7 +82,8 @@ public class AppointmentDialogController implements Initializable {
                 setText(empty || item == null ? null : item.getFullName());
             }
         });
-        cbServiceType.setCellFactory(listView -> new ListCell<>() {
+
+        cbServiceType.setCellFactory(lv -> new ListCell<>() {
             @Override
             protected void updateItem(ServiceType item, boolean empty) {
                 super.updateItem(item, empty);
@@ -98,9 +99,6 @@ public class AppointmentDialogController implements Initializable {
         });
     }
 
-    /**
-     * Вызывается из родительского контроллера для передачи сервисов и фасада.
-     */
     public void setServices(AuthService authService,
                             VehicleService vehicleService,
                             MechanicService mechanicService,
@@ -119,16 +117,12 @@ public class AppointmentDialogController implements Initializable {
         loadServiceTypesIntoComboBox();
     }
 
-    /**
-     * Устанавливает Stage диалога (нужно для контролирования закрытия).
-     */
+
     public void setDialogStage(Stage dialogStage) {
         this.dialogStage = dialogStage;
     }
 
-    /**
-     * Если передаётся существующая запись, заполняет поля диалога её данными.
-     */
+
     public void setAppointment(Appointment appointment) {
         this.appointment = appointment;
 
@@ -144,13 +138,9 @@ public class AppointmentDialogController implements Initializable {
             dpDate.setValue(sched.toLocalDate());
             tfTime.setText(sched.toLocalTime().format(DateTimeFormatter.ofPattern("HH:mm")));
         }
-//        taDescription.setText(appointment.getDescription());
     }
 
-    /**
-     * Загрузка всех mechanics в ComboBox.
-     * Админ видит всех, обычный пользователь — только механиков (не фильтруем по роли).
-     */
+
     private void loadMechanicsIntoComboBox() {
         mechanicList.clear();
         try {
@@ -162,10 +152,6 @@ public class AppointmentDialogController implements Initializable {
         }
     }
 
-    /**
-     * Загрузка всех vehicles в ComboBox.
-     * Если текущий пользователь — Customer, показываем только его машины, иначе (Admin) — все.
-     */
     private void loadVehiclesIntoComboBox() {
         vehicleList.clear();
         try {
@@ -255,7 +241,11 @@ public class AppointmentDialogController implements Initializable {
                 appointment.setMechanic(selMech);
                 appointment.setScheduledAt(scheduled);
 
-                appointmentFacade.updateAppointmentWithServices(appointment, List.of());
+                pti.datenbank.autowerk.models.AppointmentService appServ = new pti.datenbank.autowerk.models.AppointmentService();
+                appServ.setAppointment(appointment);
+                appServ.setServiceType(selServType);
+
+                appointmentFacade.updateAppointmentWithServices(appointment, List.of(appServ));
             }
 
             okClicked = true;

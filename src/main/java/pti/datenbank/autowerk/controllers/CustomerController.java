@@ -9,11 +9,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import pti.datenbank.autowerk.HelloApplication;
@@ -60,6 +56,7 @@ public class CustomerController implements Initializable {
     private final ObservableList<Vehicle> vehicleList = FXCollections.observableArrayList();
 
     // === Appointments tab ===
+
     @FXML private TableView<Appointment> appointmentTable;
     @FXML private TableColumn<Appointment, Integer> colAppId;
     @FXML private TableColumn<Appointment, String>  colAppVeh;
@@ -385,7 +382,7 @@ public class CustomerController implements Initializable {
 
         try {
             FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/pti/datenbank/autowerк/appointment-dialog.fxml"));
+                    getClass().getResource("/pti/datenbank/autowerk/appointment-dialog.fxml"));
             Parent page = loader.load();
 
             Stage dialogStage = new Stage();
