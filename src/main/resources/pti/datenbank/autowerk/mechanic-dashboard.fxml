@@ -5,6 +5,8 @@
 <?import javafx.scene.control.MenuItem?>
 <?import javafx.scene.layout.BorderPane?>
 
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.Button?>
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="pti.datenbank.autowerk.controllers.MechanicController"
             prefWidth="800" prefHeight="600">
@@ -17,7 +19,11 @@
         </MenuBar>
     </top>
     <center>
-        <Label text="Mechanic Dashboard"
-               style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+        <VBox spacing="15" alignment="CENTER" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
+            <Label text="Mechanic Dashboard"
+                   style="-fx-font-size: 18px; -fx-font-weight: bold;" />
+            <Button text="Edit Profile" onAction="#onEditProfile"/>
+            <Button text="Add New Part" onAction="#onAddPart"/>
+        </VBox>
     </center>
 </BorderPane>
