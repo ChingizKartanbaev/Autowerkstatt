@@ -60,4 +60,9 @@ public class Mechanic {
     public void setAppointments(List<Appointment> appointments) {
         this.appointments = appointments;
     }
+
+    @Override
+    public String toString() {
+        return fullName;
+    }
 }

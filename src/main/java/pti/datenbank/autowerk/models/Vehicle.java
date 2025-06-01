@@ -1,8 +1,5 @@
 package pti.datenbank.autowerk.models;
 
-import java.util.HashSet;
-import java.util.Set;
-
 public class Vehicle {
     private int vehicleId;
     private Customer customer;
@@ -68,5 +65,10 @@ public class Vehicle {
 
     public void setYear(Integer year) {
         this.year = year;
+    }
+
+    @Override
+    public String toString() {
+        return make + " " + model + " (" + licensePlate + ") ";
     }
 }
