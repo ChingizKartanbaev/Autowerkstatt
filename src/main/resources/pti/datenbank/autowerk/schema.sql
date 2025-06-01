@@ -76,7 +76,6 @@ CREATE TABLE Appointments (
 CREATE TABLE AppointmentServices (
                                      AppointmentID   INT           NOT NULL  REFERENCES Appointments(AppointmentID),
                                      ServiceTypeID   INT           NOT NULL  REFERENCES ServiceTypes(ServiceTypeID),
-                                     Quantity        INT           NOT NULL  DEFAULT 1,
                                      PRIMARY KEY (AppointmentID, ServiceTypeID)
 );
 
@@ -124,3 +123,8 @@ INSERT INTO Mechanics(UserID, FullName, Speciality) VALUES
 'Mr Brown',
 'Motors');
 GO
+
+INSERT INTO ServiceType(Name, Description, BasePrice) VALUES
+    ("Oil Change", "QWER", 100),
+    ("Wheel Alignment & Balancing", "QWER", 100),
+}

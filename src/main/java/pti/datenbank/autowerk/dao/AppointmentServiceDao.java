@@ -7,8 +7,9 @@ import java.util.List;
 
 public interface AppointmentServiceDao {
     void insert(AppointmentService entity) throws SQLException;
-    void updateQuantity(int appointmentId, int serviceTypeId, int quantity) throws SQLException;
+    void  update(AppointmentService appointmentService) throws SQLException;
     void delete(int appointmentId, int serviceTypeId) throws SQLException;
+    void deleteByAppointmentId(int appointmentId) throws SQLException;
     List<AppointmentService> findByAppointmentId(int appointmentId) throws SQLException;
     List<AppointmentService> findByServiceTypeId(int serviceTypeId) throws SQLException;
 }

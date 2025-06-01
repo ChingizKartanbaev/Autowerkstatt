@@ -22,11 +22,8 @@ import pti.datenbank.autowerk.models.Customer;
 import pti.datenbank.autowerk.models.Mechanic;
 import pti.datenbank.autowerk.models.User;
 import pti.datenbank.autowerk.models.Vehicle;
-import pti.datenbank.autowerk.services.AuthService;
-import pti.datenbank.autowerk.services.CustomerService;
-import pti.datenbank.autowerk.services.MechanicService;
-import pti.datenbank.autowerk.services.VehicleService;
-import pti.datenbank.autowerk.services.AppointmentService;
+import pti.datenbank.autowerk.services.*;
+import pti.datenbank.autowerk.services.facade.AppointmentFacade;
 
 import java.net.URL;
 import java.sql.SQLException;
@@ -42,6 +39,10 @@ public class CustomerController implements Initializable {
     private CustomerService customerService;
     private VehicleService vehicleService;
     private AppointmentService appointmentService;
+    private AppointmentFacade appointmentFacade;
+    private ServiceTypeService serviceTypeService;
+    private AppointmentServiceService appointmentServiceService;
+
     private MechanicService mechanicService;
 
     // === Profile tab ===
@@ -70,7 +71,7 @@ public class CustomerController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         initVehicleTable();
-//        initAppointmentTable();
+        initAppointmentTable();
     }
 
     public void setAuthService(AuthService authService) {
@@ -79,10 +80,14 @@ public class CustomerController implements Initializable {
         this.vehicleService     = new VehicleService(authService);
         this.appointmentService = new AppointmentService(authService);
         this.mechanicService    = new MechanicService(authService);
+        this.appointmentService = new AppointmentService(authService);
+        this.serviceTypeService = new ServiceTypeService(authService);
+        this.appointmentFacade = new AppointmentFacade(authService);
+        appointmentServiceService = new AppointmentServiceService(authService);
 
         loadUserProfile();
         loadUserVehicles();
-//        loadUserAppointments();
+        loadUserAppointments();
     }
 
     // === Profile Tab  ====
@@ -91,7 +96,6 @@ public class CustomerController implements Initializable {
         if (current == null) return;
 
         try {
-            // Теперь findByUserId возвращает Customer напрямую (или null)
             Customer cust = customerService.findByUserId(current.getUserId());
             if (cust != null) {
                 tfFullName.setText(cust.getFullName());
@@ -130,7 +134,6 @@ public class CustomerController implements Initializable {
                 cust.setAddress(addr);
                 customerService.update(cust);
             } else {
-                // Профиля ещё нет — создаём новый
                 Customer newCust = new Customer();
                 newCust.setUser(current);
                 newCust.setFullName(fn);
@@ -242,248 +245,240 @@ public class CustomerController implements Initializable {
         }
     }
 
-//    @FXML
-//    private void onDeleteVehicle() {
-//        Vehicle selected = vehicleTable.getSelectionModel().getSelectedItem();
-//        if (selected == null) {
-//            Alert w = new Alert(Alert.AlertType.WARNING,
-//                    "Пожалуйста, выберите машину из списка.", ButtonType.OK);
-//            w.setTitle("Нет выбора");
-//            w.showAndWait();
-//            return;
-//        }
-//
-//        // Проверяем, нет ли у этой машины активных записей
-//        try {
-//            boolean hasActive = appointmentService.hasActiveAppointmentsForVehicle(
-//                    selected.getVehicleId());
-//            if (hasActive) {
-//                Alert info = new Alert(Alert.AlertType.INFORMATION,
-//                        "Невозможно удалить машину, у которой есть активные записи на ремонт.",
-//                        ButtonType.OK);
-//                info.setTitle("Удаление запрещено");
-//                info.showAndWait();
-//                return;
-//            }
-//        } catch (SQLException e) {
-//            showError("Ошибка при проверке активных записей:\n" + e.getMessage());
-//            return;
-//        }
-//
-//        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-//                "Вы точно хотите удалить машину \"" +
-//                        selected.getMake() + " " + selected.getModel() + "\"?",
-//                ButtonType.YES, ButtonType.NO);
-//        confirm.initOwner(vehicleTable.getScene().getWindow());
-//        confirm.setTitle("Удалить машину");
-//        Optional<ButtonType> result = confirm.showAndWait();
-//        if (result.isEmpty() || result.get() != ButtonType.YES) {
-//            return;
-//        }
-//
-//        try {
-//            vehicleService.delete(selected.getVehicleId());
-//            loadUserVehicles();
-//        } catch (SQLException ex) {
-//            showError("Не удалось удалить машину:\n" + ex.getMessage());
-//        }
-//    }
+    @FXML
+    private void onDeleteVehicle() {
+        Vehicle selected = vehicleTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            Alert w = new Alert(Alert.AlertType.WARNING,
+                    "Пожалуйста, выберите машину из списка.", ButtonType.OK);
+            w.setTitle("Нет выбора");
+            w.showAndWait();
+            return;
+        }
 
-    // ===================================
-    // === Appointments Tab Methods    ===
-    // ===================================
-//    private void initAppointmentTable() {
-//        colAppId.setCellValueFactory(cell ->
-//                new ReadOnlyObjectWrapper<>(cell.getValue().getAppointmentId()));
-//
-//        colAppVeh.setCellValueFactory(cell -> {
-//            Vehicle v = cell.getValue().getVehicle();
-//            return (v != null)
-//                    ? new ReadOnlyStringWrapper(v.getMake() + " " + v.getModel())
-//                    : new ReadOnlyStringWrapper("");
-//        });
-//
-//        colAppMech.setCellValueFactory(cell -> {
-//            Mechanic m = cell.getValue().getMechanic();
-//            return (m != null)
-//                    ? new ReadOnlyStringWrapper(m.getFullName())
-//                    : new ReadOnlyStringWrapper("");
-//        });
-//
-//        colAppDateTime.setCellValueFactory(cell -> {
-//            var dt = cell.getValue().getAppointmentDateTime();
-//            String formatted = dt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
-//            return new ReadOnlyStringWrapper(formatted);
-//        });
-//
-//        colAppStatus.setCellValueFactory(cell ->
-//                new ReadOnlyStringWrapper(cell.getValue().getStatus().name()));
-//
-//        appointmentTable.setItems(appointmentList);
-//    }
+        try {
+            boolean hasActive = appointmentService.hasActiveAppointmentsForVehicle(selected.getVehicleId());
+            if (hasActive) {
+                Alert info = new Alert(Alert.AlertType.INFORMATION,
+                        "Невозможно удалить машину, у которой есть активные записи на ремонт.",
+                        ButtonType.OK);
+                info.setTitle("Удаление запрещено");
+                info.showAndWait();
+                return;
+            }
+        } catch (SQLException e) {
+            showError("Ошибка при проверке активных записей:\n" + e.getMessage());
+            return;
+        }
 
-//    private void loadUserAppointments() {
-//        appointmentList.clear();
-//        try {
-//            User current = authService.getCurrentUser();
-//            Customer cust = customerService.findByUserId(current.getUserId());
-//            if (cust != null) {
-//                int custId = cust.getCustomerId();
-//                List<Appointment> list = appointmentService.findByCustomerId(custId);
-//                appointmentList.setAll(list);
-//            }
-//        } catch (SQLException ex) {
-//            showError("Не удалось загрузить список записей:\n" + ex.getMessage());
-//        }
-//    }
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+                "Вы точно хотите удалить машину \"" +
+                        selected.getMake() + " " + selected.getModel() + "\"?",
+                ButtonType.YES, ButtonType.NO);
+        confirm.initOwner(vehicleTable.getScene().getWindow());
+        confirm.setTitle("Удалить машину");
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isEmpty() || result.get() != ButtonType.YES) {
+            return;
+        }
 
-//    @FXML
-//    private void onAddAppointment() {
-//        try {
-//            FXMLLoader loader = new FXMLLoader(
-//                    getClass().getResource("/pti/datenbank/autowerк/appointment-dialog.fxml")
-//            );
-//            Parent page = loader.load();
-//
-//            Stage dialogStage = new Stage();
-//            dialogStage.setTitle("New Appointment");
-//            dialogStage.initModality(Modality.WINDOW_MODAL);
-//            dialogStage.initOwner(appointmentTable.getScene().getWindow());
-//            dialogStage.setScene(new Scene(page));
-//
-//            AppointmentDialogController ctrl = loader.getController();
-//            ctrl.setServices(authService, vehicleService, mechanicService, appointmentService);
-//            ctrl.setDialogStage(dialogStage);
-//
-//            dialogStage.showAndWait();
-//
-//            if (ctrl.isOkClicked()) {
-//                loadUserAppointments();
-//            }
-//        } catch (Exception ex) {
-//            showError("Не удалось открыть диалог создания записи:\n" + ex.getMessage());
-//        }
-//    }
+        try {
+            vehicleService.delete(selected.getVehicleId());
+            loadUserVehicles();
+        } catch (SQLException ex) {
+            showError("Не удалось удалить машину:\n" + ex.getMessage());
+        }
+    }
 
-//    @FXML
-//    private void onEditAppointment() {
-//        Appointment selected = appointmentTable.getSelectionModel().getSelectedItem();
-//        if (selected == null) {
-//            Alert w = new Alert(Alert.AlertType.WARNING,
-//                    "Пожалуйста, выберите запись из списка.", ButtonType.OK);
-//            w.setTitle("Нет выбора");
-//            w.showAndWait();
-//            return;
-//        }
-//
-//        // Редактировать можно только, если статус = PENDING
-//        if (!"PENDING".equals(selected.getStatus().name())) {
-//            Alert info = new Alert(Alert.AlertType.INFORMATION,
-//                    "Редактировать можно только записи в статусе \"Pending\".", ButtonType.OK);
-//            info.setTitle("Нельзя редактировать");
-//            info.showAndWait();
-//            return;
-//        }
-//
-//        try {
-//            FXMLLoader loader = new FXMLLoader(
-//                    getClass().getResource("/pti/datenbank/autowerк/appointment-dialog.fxml")
-//            );
-//            Parent page = loader.load();
-//
-//            Stage dialogStage = new Stage();
-//            dialogStage.setTitle("Edit Appointment");
-//            dialogStage.initModality(Modality.WINDOW_MODAL);
-//            dialogStage.initOwner(appointmentTable.getScene().getWindow());
-//            dialogStage.setScene(new Scene(page));
-//
-//            AppointmentDialogController ctrl = loader.getController();
-//            ctrl.setServices(authService, vehicleService, mechanicService, appointmentService);
-//            ctrl.setDialogStage(dialogStage);
-//            ctrl.setAppointment(selected);
-//
-//            dialogStage.showAndWait();
-//
-//            if (ctrl.isOkClicked()) {
-//                loadUserAppointments();
-//            }
-//        } catch (Exception ex) {
-//            showError("Не удалось открыть диалог редактирования записи:\n" + ex.getMessage());
-//        }
-//    }
-//
-//    @FXML
-//    private void onCancelAppointment() {
-//        Appointment selected = appointmentTable.getSelectionModel().getSelectedItem();
-//        if (selected == null) {
-//            Alert w = new Alert(Alert.AlertType.WARNING,
-//                    "Пожалуйста, выберите запись из списка.", ButtonType.OK);
-//            w.setTitle("Нет выбора");
-//            w.showAndWait();
-//            return;
-//        }
-//
-//        // Отменить можно только, если статус = PENDING
-//        if (!"PENDING".equals(selected.getStatus().name())) {
-//            Alert info = new Alert(Alert.AlertType.INFORMATION,
-//                    "Отменить можно только записи в статусе \"Pending\".", ButtonType.OK);
-//            info.setTitle("Нельзя отменить");
-//            info.showAndWait();
-//            return;
-//        }
-//
-//        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-//                "Вы точно хотите отменить запись ID=" + selected.getAppointmentId() + " ?",
-//                ButtonType.YES, ButtonType.NO);
-//        confirm.initOwner(appointmentTable.getScene().getWindow());
-//        confirm.setTitle("Отменить запись");
-//        Optional<ButtonType> res = confirm.showAndWait();
-//        if (res.isEmpty() || res.get() != ButtonType.YES) {
-//            return;
-//        }
-//
-//        try {
-//            // Предполагается, что метод cancel(int appointmentId) устанавливает статус записи в CANCELLED
-//            appointmentService.cancel(selected.getAppointmentId());
-//            loadUserAppointments();
-//        } catch (SQLException ex) {
-//            showError("Не удалось отменить запись:\n" + ex.getMessage());
-//        }
-//    }
-//
-//    @FXML
-//    private void onViewAppointmentDetails() {
-//        Appointment selected = appointmentTable.getSelectionModel().getSelectedItem();
-//        if (selected == null) {
-//            Alert w = new Alert(Alert.AlertType.WARNING,
-//                    "Пожалуйста, выберите запись из списка.", ButtonType.OK);
-//            w.setTitle("Нет выбора");
-//            w.showAndWait();
-//            return;
-//        }
-//
-//        try {
-//            FXMLLoader loader = new FXMLLoader(
-//                    getClass().getResource("/pti/datenbank/autowerк/appointment-details-dialog.fxml")
-//            );
-//            Parent page = loader.load();
-//
-//            Stage dialogStage = new Stage();
-//            dialogStage.setTitle("Appointment Details");
-//            dialogStage.initModality(Modality.WINDOW_MODAL);
-//            dialogStage.initOwner(appointmentTable.getScene().getWindow());
-//            dialogStage.setScene(new Scene(page));
-//
-//            AppointmentDetailsController ctrl = loader.getController();
-//            ctrl.setAppointment(selected);
-//            ctrl.setDialogStage(dialogStage);
-//
-//            dialogStage.showAndWait();
-//            // После просмотра деталей обновлять ничего не нужно
-//        } catch (Exception ex) {
-//            showError("Не удалось открыть детали записи:\n" + ex.getMessage());
-//        }
-//    }
+//     ===================================
+//     === Appointments Tab Methods    ===
+//     ===================================
+    private void initAppointmentTable() {
+        colAppId.setCellValueFactory(cell ->
+                new ReadOnlyObjectWrapper<>(cell.getValue().getAppointmentId()));
+
+        colAppVeh.setCellValueFactory(cell -> {
+            Vehicle v = cell.getValue().getVehicle();
+            return (v != null)
+                    ? new ReadOnlyStringWrapper(v.getMake() + " " + v.getModel())
+                    : new ReadOnlyStringWrapper("");
+        });
+
+        colAppMech.setCellValueFactory(cell -> {
+            Mechanic m = cell.getValue().getMechanic();
+            return (m != null)
+                    ? new ReadOnlyStringWrapper(m.getFullName())
+                    : new ReadOnlyStringWrapper("");
+        });
+
+        colAppDateTime.setCellValueFactory(cell -> {
+            var dt = cell.getValue().getScheduledAt();
+            String formatted = dt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+            return new ReadOnlyStringWrapper(formatted);
+        });
+
+        colAppStatus.setCellValueFactory(cell ->
+                new ReadOnlyStringWrapper(cell.getValue().getStatus()));
+
+        appointmentTable.setItems(appointmentList);
+    }
+
+    private void loadUserAppointments() {
+        appointmentList.clear();
+        try {
+            User current = authService.getCurrentUser();
+            Customer cust = customerService.findByUserId(current.getUserId());
+            if (cust != null) {
+                int custId = cust.getCustomerId();
+                List<Appointment> list = appointmentService.findByCustomerId(custId);
+                appointmentList.setAll(list);
+            }
+        } catch (SQLException ex) {
+            showError("Не удалось загрузить список записей:\n" + ex.getMessage());
+        }
+    }
+
+    @FXML
+    private void onAddAppointment() {
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/pti/datenbank/autowerk/appointment-dialog.fxml"));
+            Parent page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Новая запись");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(appointmentTable.getScene().getWindow());
+            dialogStage.setScene(new Scene(page));
+
+            AppointmentDialogController ctrl = loader.getController();
+            ctrl.setServices(authService, vehicleService, mechanicService, appointmentService, serviceTypeService,appointmentFacade);
+            ctrl.setDialogStage(dialogStage);
+
+            dialogStage.showAndWait();
+
+            if (ctrl.isOkClicked()) {
+                loadUserAppointments();
+            }
+        } catch (Exception ex) {
+            showError("Не удалось открыть диалог создания записи:\n" + ex.getMessage());
+        }
+    }
+    @FXML
+    private void onEditAppointment() {
+        Appointment selected = appointmentTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            Alert w = new Alert(Alert.AlertType.WARNING,
+                    "Пожалуйста, выберите запись из списка.", ButtonType.OK);
+            w.setTitle("Нет выбора");
+            w.showAndWait();
+            return;
+        }
+
+        if (!"PENDING".equals(selected.getStatus())) {
+            Alert info = new Alert(Alert.AlertType.INFORMATION,
+                    "Редактировать можно только записи в статусе \"Pending\".", ButtonType.OK);
+            info.setTitle("Нельзя редактировать");
+            info.showAndWait();
+            return;
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/pti/datenbank/autowerк/appointment-dialog.fxml"));
+            Parent page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Редактирование записи");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(appointmentTable.getScene().getWindow());
+            dialogStage.setScene(new Scene(page));
+
+            AppointmentDialogController ctrl = loader.getController();
+            ctrl.setServices(authService, vehicleService, mechanicService, appointmentService,serviceTypeService, appointmentFacade);
+            ctrl.setDialogStage(dialogStage);
+            ctrl.setAppointment(selected);
+
+            dialogStage.showAndWait();
+
+            if (ctrl.isOkClicked()) {
+                loadUserAppointments();
+            }
+        } catch (Exception ex) {
+            showError("Не удалось открыть диалог редактирования записи:\n" + ex.getMessage());
+        }
+    }
+
+    @FXML
+    private void onCancelAppointment() {
+        Appointment selected = appointmentTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            Alert w = new Alert(Alert.AlertType.WARNING,
+                    "Пожалуйста, выберите запись из списка.", ButtonType.OK);
+            w.setTitle("Нет выбора");
+            w.showAndWait();
+            return;
+        }
+
+        if (!"PENDING".equals(selected.getStatus())) {
+            Alert info = new Alert(Alert.AlertType.INFORMATION,
+                    "Отменить можно только записи в статусе \"Pending\".", ButtonType.OK);
+            info.setTitle("Нельзя отменить");
+            info.showAndWait();
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
+                "Вы точно хотите отменить запись ID=" + selected.getAppointmentId() + "?",
+                ButtonType.YES, ButtonType.NO);
+        confirm.initOwner(appointmentTable.getScene().getWindow());
+        confirm.setTitle("Отменить запись");
+        Optional<ButtonType> res = confirm.showAndWait();
+        if (res.isEmpty() || res.get() != ButtonType.YES) {
+            return;
+        }
+
+        try {
+            selected.setStatus("CANCELLED");
+            appointmentFacade.updateAppointmentWithServices(selected,
+                    appointmentServiceService.findByAppointmentId(selected.getAppointmentId()));
+            loadUserAppointments();
+        } catch (SQLException ex) {
+            showError("Не удалось отменить запись:\n" + ex.getMessage());
+        }
+    }
+
+    @FXML
+    private void onViewAppointmentDetails() {
+        Appointment selected = appointmentTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            Alert w = new Alert(Alert.AlertType.WARNING,
+                    "Пожалуйста, выберите запись из списка.", ButtonType.OK);
+            w.setTitle("Нет выбора");
+            w.showAndWait();
+            return;
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/pti/datenbank/autowerк/appointment-details-dialog.fxml"));
+            Parent page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Детали записи");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(appointmentTable.getScene().getWindow());
+            dialogStage.setScene(new Scene(page));
+
+            AppointmentDetailsController ctrl = loader.getController();
+            ctrl.setAppointment(selected);
+            ctrl.setDialogStage(dialogStage);
+
+            dialogStage.showAndWait();
+        } catch (Exception ex) {
+            showError("Не удалось открыть детали записи:\n" + ex.getMessage());
+        }
+    }
 
     // =====================================
     // === Общие утилитарные методы     ===

@@ -13,21 +13,24 @@ import java.util.List;
 
 public class AppointmentDaoImpl implements AppointmentDao {
     private static final String SELECT_BASE =
-            "SELECT AppointmentID, CustomerID, MechanicID, VehicleID, ScheduledAt, Status FROM Appointments";
-    private static final String SELECT_BY_ID = SELECT_BASE + " WHERE AppointmentID = ?";
-    private static final String INSERT_SQL =
-            "INSERT INTO Appointments (CustomerID, MechanicID, VehicleID, ScheduledAt, Status) VALUES (?, ?, ?, ?, ?)";
-    private static final String UPDATE_SQL =
+            "SELECT AppointmentID, CustomerID, MechanicID, VehicleID, ScheduledAt, Status\n" +
+                    "  FROM Appointments";
+
+    private static final String SELECT_BY_ID   = SELECT_BASE + " WHERE AppointmentID = ?";
+    private static final String INSERT_SQL     =
+            "INSERT INTO Appointments (CustomerID, MechanicID, VehicleID, ScheduledAt, Status)\n" +
+                    "VALUES (?, ?, ?, ?, ?)";
+    private static final String UPDATE_SQL     =
             "UPDATE Appointments SET ScheduledAt = ?, Status = ? WHERE AppointmentID = ?";
-    private static final String DELETE_SQL = "DELETE FROM Appointments WHERE AppointmentID = ?";
+    private static final String DELETE_SQL     = "DELETE FROM Appointments WHERE AppointmentID = ?";
     private static final String SELECT_BY_CUST = SELECT_BASE + " WHERE CustomerID = ?";
     private static final String SELECT_BY_MECH = SELECT_BASE + " WHERE MechanicID = ?";
 
     @Override
-    public Appointment findById(Integer id) throws SQLException {
+    public Appointment findById(Integer appointmentId) throws SQLException {
         try (Connection c = DBConnection.getConnection();
              PreparedStatement ps = c.prepareStatement(SELECT_BY_ID)) {
-            ps.setInt(1, id);
+            ps.setInt(1, appointmentId);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
                     return mapRow(rs);
@@ -41,8 +44,8 @@ public class AppointmentDaoImpl implements AppointmentDao {
     public List<Appointment> findAll() throws SQLException {
         List<Appointment> list = new ArrayList<>();
         try (Connection c = DBConnection.getConnection();
-             Statement s = c.createStatement();
-             ResultSet rs = s.executeQuery(SELECT_BASE)) {
+             Statement stmt = c.createStatement();
+             ResultSet rs = stmt.executeQuery(SELECT_BASE)) {
             while (rs.next()) {
                 list.add(mapRow(rs));
             }
@@ -60,6 +63,8 @@ public class AppointmentDaoImpl implements AppointmentDao {
             ps.setTimestamp(4, Timestamp.valueOf(a.getScheduledAt()));
             ps.setString(5, a.getStatus());
             ps.executeUpdate();
+
+            // Получаем сгенерированный ключ
             try (ResultSet keys = ps.getGeneratedKeys()) {
                 if (keys.next()) {
                     a.setAppointmentId(keys.getInt(1));
@@ -80,10 +85,10 @@ public class AppointmentDaoImpl implements AppointmentDao {
     }
 
     @Override
-    public void delete(Integer id) throws SQLException {
+    public void delete(Integer appointmentId) throws SQLException {
         try (Connection c = DBConnection.getConnection();
              PreparedStatement ps = c.prepareStatement(DELETE_SQL)) {
-            ps.setInt(1, id);
+            ps.setInt(1, appointmentId);
             ps.executeUpdate();
         }
     }
@@ -118,22 +123,40 @@ public class AppointmentDaoImpl implements AppointmentDao {
         return list;
     }
 
-    /**
-     * Maps a result set row to an Appointment object.
-     */
+    @Override
+    public int countActiveByVehicle(int vehicleId) throws SQLException {
+        String SQL =
+                "SELECT COUNT(*) AS cnt " +
+                        "FROM Appointments " +
+                        "WHERE VehicleID = ? AND Status IN ('PENDING','CONFIRMED')";
+        try (Connection c = DBConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(SQL)) {
+            ps.setInt(1, vehicleId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("cnt");
+                }
+            }
+        }
+        return 0;
+    }
+
     private Appointment mapRow(ResultSet rs) throws SQLException {
         Appointment a = new Appointment();
         a.setAppointmentId(rs.getInt("AppointmentID"));
-        // Load related entities via their DAOs
+
         Customer cust = new CustomerDaoImpl().findById(rs.getInt("CustomerID"));
-        Mechanic mech = new MechanicDaoImpl().findById(rs.getInt("MechanicID"));
-        Vehicle veh = new VehicleDaoImpl().findById(rs.getInt("VehicleID"));
         a.setCustomer(cust);
+
+        Mechanic mech = new MechanicDaoImpl().findById(rs.getInt("MechanicID"));
         a.setMechanic(mech);
+
+        Vehicle veh = new VehicleDaoImpl().findById(rs.getInt("VehicleID"));
         a.setVehicle(veh);
+
         a.setScheduledAt(rs.getTimestamp("ScheduledAt").toLocalDateTime());
         a.setStatus(rs.getString("Status"));
-        // For simplicity, services and parts lists can be loaded lazily by service layer
+
         return a;
     }
 }

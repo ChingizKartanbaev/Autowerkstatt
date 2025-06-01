@@ -2,8 +2,8 @@ package pti.datenbank.autowerk.dao.Impl;
 
 import pti.datenbank.autowerk.dao.AppointmentServiceDao;
 import pti.datenbank.autowerk.dao.DBConnection;
-import pti.datenbank.autowerk.models.Appointment;
 import pti.datenbank.autowerk.models.AppointmentService;
+import pti.datenbank.autowerk.models.Appointment;
 import pti.datenbank.autowerk.models.ServiceType;
 
 import java.sql.*;
@@ -12,15 +12,22 @@ import java.util.List;
 
 public class AppointmentServiceDaoImpl implements AppointmentServiceDao {
     private static final String INSERT_SQL =
-            "INSERT INTO AppointmentServices (AppointmentID, ServiceTypeID, Quantity) VALUES (?, ?, ?)";
+            "INSERT INTO AppointmentServices (AppointmentID, ServiceTypeID) VALUES (?, ?)";
+
     private static final String UPDATE_SQL =
             "UPDATE AppointmentServices SET Quantity = ? WHERE AppointmentID = ? AND ServiceTypeID = ?";
+
     private static final String DELETE_SQL =
             "DELETE FROM AppointmentServices WHERE AppointmentID = ? AND ServiceTypeID = ?";
+
+    private static final String DELETE_BY_APPT_SQL =
+            "DELETE FROM AppointmentServices WHERE AppointmentID = ?";
+
     private static final String SELECT_BY_APPT =
-            "SELECT AppointmentID, ServiceTypeID, Quantity FROM AppointmentServices WHERE AppointmentID = ?";
+            "SELECT AppointmentID, ServiceTypeID FROM AppointmentServices WHERE AppointmentID = ?";
+
     private static final String SELECT_BY_SERVICE =
-            "SELECT AppointmentID, ServiceTypeID, Quantity FROM AppointmentServices WHERE ServiceTypeID = ?";
+            "SELECT AppointmentID, ServiceTypeID FROM AppointmentServices WHERE ServiceTypeID = ?";
 
     @Override
     public void insert(AppointmentService entity) throws SQLException {
@@ -28,18 +35,14 @@ public class AppointmentServiceDaoImpl implements AppointmentServiceDao {
              PreparedStatement ps = c.prepareStatement(INSERT_SQL)) {
             ps.setInt(1, entity.getAppointment().getAppointmentId());
             ps.setInt(2, entity.getServiceType().getServiceTypeId());
-            ps.setInt(3, entity.getQuantity());
             ps.executeUpdate();
         }
     }
 
     @Override
-    public void updateQuantity(int appointmentId, int serviceTypeId, int quantity) throws SQLException {
+    public void update(AppointmentService appointmentService) throws SQLException {
         try (Connection c = DBConnection.getConnection();
              PreparedStatement ps = c.prepareStatement(UPDATE_SQL)) {
-            ps.setInt(1, quantity);
-            ps.setInt(2, appointmentId);
-            ps.setInt(3, serviceTypeId);
             ps.executeUpdate();
         }
     }
@@ -55,6 +58,15 @@ public class AppointmentServiceDaoImpl implements AppointmentServiceDao {
     }
 
     @Override
+    public void deleteByAppointmentId(int appointmentId) throws SQLException {
+        try (Connection c = DBConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(DELETE_BY_APPT_SQL)) {
+            ps.setInt(1, appointmentId);
+            ps.executeUpdate();
+        }
+    }
+
+    @Override
     public List<AppointmentService> findByAppointmentId(int appointmentId) throws SQLException {
         List<AppointmentService> list = new ArrayList<>();
         try (Connection c = DBConnection.getConnection();
@@ -62,8 +74,7 @@ public class AppointmentServiceDaoImpl implements AppointmentServiceDao {
             ps.setInt(1, appointmentId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    AppointmentService as = mapRow(rs);
-                    list.add(as);
+                    list.add(mapRow(rs));
                 }
             }
         }
@@ -78,8 +89,7 @@ public class AppointmentServiceDaoImpl implements AppointmentServiceDao {
             ps.setInt(1, serviceTypeId);
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    AppointmentService as = mapRow(rs);
-                    list.add(as);
+                    list.add(mapRow(rs));
                 }
             }
         }
@@ -88,8 +98,7 @@ public class AppointmentServiceDaoImpl implements AppointmentServiceDao {
 
     private AppointmentService mapRow(ResultSet rs) throws SQLException {
         int apptId = rs.getInt("AppointmentID");
-        int svcId = rs.getInt("ServiceTypeID");
-        int qty = rs.getInt("Quantity");
+        int svcId  = rs.getInt("ServiceTypeID");
 
         Appointment appt = new AppointmentDaoImpl().findById(apptId);
         ServiceType svc = new ServiceTypeDaoImpl().findById(svcId);
@@ -97,7 +106,6 @@ public class AppointmentServiceDaoImpl implements AppointmentServiceDao {
         AppointmentService as = new AppointmentService();
         as.setAppointment(appt);
         as.setServiceType(svc);
-        as.setQuantity(qty);
         return as;
     }
 }

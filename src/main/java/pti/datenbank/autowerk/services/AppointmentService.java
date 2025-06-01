@@ -1,52 +1,68 @@
 package pti.datenbank.autowerk.services;
 
 import pti.datenbank.autowerk.dao.AppointmentDao;
+import pti.datenbank.autowerk.dao.AppointmentPartDao;
 import pti.datenbank.autowerk.dao.Impl.AppointmentDaoImpl;
+import pti.datenbank.autowerk.dao.Impl.AppointmentPartDaoImpl;
 import pti.datenbank.autowerk.enums.Permission;
 import pti.datenbank.autowerk.models.Appointment;
+
 
 import java.sql.SQLException;
 import java.util.List;
 
 public class AppointmentService extends BaseService {
-    private final AppointmentDao dao = new AppointmentDaoImpl();
+    private final AppointmentDao appointmentDao = new AppointmentDaoImpl();
+    private final AppointmentServiceService apptSvcService;
+    private final AppointmentPartDao apptPartDao = new AppointmentPartDaoImpl();
 
     public AppointmentService(AuthService authService) {
         super(authService);
+        this.apptSvcService = new AppointmentServiceService(authService);
     }
 
     public Appointment findById(int id) throws SQLException {
         checkPermission(Permission.READ);
-        return dao.findById(id);
+        return appointmentDao.findById(id);
     }
 
     public List<Appointment> findAll() throws SQLException {
         checkPermission(Permission.READ);
-        return dao.findAll();
+        return appointmentDao.findAll();
     }
 
     public List<Appointment> findByCustomerId(int customerId) throws SQLException {
         checkPermission(Permission.READ);
-        return dao.findByCustomerId(customerId);
+        return appointmentDao.findByCustomerId(customerId);
     }
 
     public List<Appointment> findByMechanicId(int mechanicId) throws SQLException {
         checkPermission(Permission.READ);
-        return dao.findByMechanicId(mechanicId);
+        return appointmentDao.findByMechanicId(mechanicId);
     }
 
-    public void create(Appointment appt) throws SQLException {
+    public void create(Appointment appointment) throws SQLException {
         checkPermission(Permission.CREATE);
-        dao.insert(appt);
+        appointmentDao.insert(appointment);
     }
 
-    public void update(Appointment appt) throws SQLException {
+    public void update(Appointment appointment) throws SQLException {
         checkPermission(Permission.UPDATE);
-        dao.update(appt);
+        appointmentDao.update(appointment);
     }
 
-    public void delete(int id) throws SQLException {
+
+    public void delete(int appointmentId) throws SQLException {
         checkPermission(Permission.DELETE);
-        dao.delete(id);
+        appointmentDao.delete(appointmentId);
     }
+
+    public boolean hasActiveAppointmentsForVehicle(int vehicleId) throws SQLException {
+        checkPermission(Permission.READ);
+        int cnt = ((AppointmentDaoImpl)appointmentDao).countActiveByVehicle(vehicleId);
+        return cnt > 0;
+    }
+
+
+
 }
