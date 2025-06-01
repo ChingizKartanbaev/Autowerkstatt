@@ -1,29 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Menu?>
-<?import javafx.scene.control.MenuBar?>
-<?import javafx.scene.control.MenuItem?>
-<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 
-<?import javafx.scene.layout.VBox?>
-<?import javafx.scene.control.Button?>
+<?import javafx.geometry.Insets?>
 <BorderPane xmlns:fx="http://javafx.com/fxml"
             fx:controller="pti.datenbank.autowerk.controllers.MechanicController"
             prefWidth="800" prefHeight="600">
+
     <top>
         <MenuBar>
             <Menu text="File">
-                <MenuItem text="Logout"   onAction="#onLogout"/>
-                <MenuItem text="Exit"     onAction="#onExit"/>
+                <MenuItem text="Logout" onAction="#onLogout"/>
+                <MenuItem text="Exit" onAction="#onExit"/>
             </Menu>
         </MenuBar>
     </top>
+
     <center>
-        <VBox spacing="15" alignment="CENTER" xmlns="http://javafx.com/javafx" xmlns:fx="http://javafx.com/fxml">
-            <Label text="Mechanic Dashboard"
-                   style="-fx-font-size: 18px; -fx-font-weight: bold;" />
-            <Button text="Edit Profile" onAction="#onEditProfile"/>
-            <Button text="Add New Part" onAction="#onAddPart"/>
-        </VBox>
+        <TabPane fx:id="tabPane">
+            <tabs>
+                <!-- PROFILE TAB -->
+                <Tab fx:id="tabProfile" text="Profile">
+                    <content>
+                        <VBox fx:id="profileRoot"/>
+                    </content>
+                </Tab>
+
+                <!-- PARTS TAB -->
+                <Tab text="Parts">
+                    <content>
+                        <VBox spacing="10">
+                            <padding>
+                                <Insets top="10" right="10" bottom="10" left="10"/>
+                            </padding>
+                            <HBox spacing="10">
+                                <Button text="Add Part" onAction="#onAddPart"/>
+                            </HBox>
+                            <TableView fx:id="partTable" prefHeight="400">
+                                <columns>
+                                    <TableColumn fx:id="colPartId" text="ID"/>
+                                    <TableColumn fx:id="colPartName" text="Name"/>
+                                    <TableColumn fx:id="colPartManufacturer" text="Manufacturer"/>
+                                    <TableColumn fx:id="colPartUnitPrice" text="Unit Price"/>
+                                    <TableColumn fx:id="colPartInStockQty" text="In Stock Qty"/>
+                                </columns>
+                            </TableView>
+                        </VBox>
+                    </content>
+                </Tab>
+            </tabs>
+        </TabPane>
     </center>
 </BorderPane>

@@ -10,11 +10,11 @@ public class DBConnection {
     private static final String DRIVER_CLASS = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
     private static final String URL =
             "jdbc:sqlserver://localhost:1433;"
-                    + "databaseName=AutowerkstattDB;"
+                    + "databaseName=Autowerkstatt;"
                     + "encrypt=false";
 
     private static final String USERNAME = "sa";
-    private static final String PASSWORD = "123";
+    private static final String PASSWORD = "msserver";
 
     static {
         try {

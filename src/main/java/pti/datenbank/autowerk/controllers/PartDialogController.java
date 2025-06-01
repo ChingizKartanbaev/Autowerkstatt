@@ -101,6 +101,8 @@ public class PartDialogController {
             part.setInStockQty(Integer.parseInt(tfInStockQty.getText().trim()));
 
             if (part.getPartId() == 0) {
+                System.out.println("Creating part: " + part.getName() +
+                        " by user ID: " + authService.getCurrentUser().getUserId());
                 partService.create(part);
             } else {
                 partService.update(part);

@@ -17,12 +17,9 @@ import javafx.scene.control.TextField;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import pti.datenbank.autowerk.HelloApplication;
-import pti.datenbank.autowerk.models.Appointment;
-import pti.datenbank.autowerk.models.Customer;
-import pti.datenbank.autowerk.models.Mechanic;
-import pti.datenbank.autowerk.models.User;
-import pti.datenbank.autowerk.models.Vehicle;
+import pti.datenbank.autowerk.models.*;
 import pti.datenbank.autowerk.services.*;
+import pti.datenbank.autowerk.services.AppointmentService;
 import pti.datenbank.autowerk.services.facade.AppointmentFacade;
 
 import java.net.URL;
@@ -66,12 +63,23 @@ public class CustomerController implements Initializable {
     @FXML private TableColumn<Appointment, String>  colAppMech;
     @FXML private TableColumn<Appointment, String>  colAppDateTime;
     @FXML private TableColumn<Appointment, String>  colAppStatus;
+
+    @FXML private TableView<Part> partTable;
+    @FXML private TableColumn<Part, Integer> colPartId;
+    @FXML private TableColumn<Part, String> colPartName;
+    @FXML private TableColumn<Part, java.math.BigDecimal> colPartUnitPrice;
+    @FXML private TableColumn<Part, Integer> colPartInStockQty;
+
+    private final ObservableList<Part> partList = FXCollections.observableArrayList();
+    private PartService partService;
+
     private final ObservableList<Appointment> appointmentList = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         initVehicleTable();
         initAppointmentTable();
+        initPartTable();
     }
 
     public void setAuthService(AuthService authService) {
@@ -83,11 +91,59 @@ public class CustomerController implements Initializable {
         this.appointmentService = new AppointmentService(authService);
         this.serviceTypeService = new ServiceTypeService(authService);
         this.appointmentFacade = new AppointmentFacade(authService);
+        this.partService = new PartService(authService);
         appointmentServiceService = new AppointmentServiceService(authService);
 
         loadUserProfile();
         loadUserVehicles();
         loadUserAppointments();
+        loadParts();
+    }
+
+    // Part Tab
+    private void initPartTable() {
+        colPartId.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getPartId()));
+        colPartName.setCellValueFactory(cell -> new ReadOnlyStringWrapper(cell.getValue().getName()));
+        colPartUnitPrice.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getUnitPrice()));
+        colPartInStockQty.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getInStockQty()));
+        partTable.setItems(partList);
+    }
+
+    private void loadParts() {
+        try {
+            User current = authService.getCurrentUser();
+            partList.setAll(partService.findByCreator(current.getUserId()));
+
+        } catch (SQLException e) {
+            showError("Failed to load parts: " + e.getMessage());
+        }
+    }
+
+    @FXML
+    private void onAddPart() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/pti/datenbank/autowerk/part-dialog.fxml"));
+            Parent page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Add Part");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(partTable.getScene().getWindow());
+            dialogStage.setScene(new Scene(page));
+
+            PartDialogController dialogCtrl = loader.getController();
+            dialogCtrl.setServices(authService, partService);
+            dialogCtrl.setDialogStage(dialogStage);
+
+            dialogStage.showAndWait();
+
+            if (dialogCtrl.isOkClicked()) {
+                System.out.println("Reloading parts after add...");
+                loadParts();
+            }
+        } catch (Exception e) {
+            showError("Failed to open Part dialog:\n" + e.getMessage());
+        }
     }
 
     // === Profile Tab  ====

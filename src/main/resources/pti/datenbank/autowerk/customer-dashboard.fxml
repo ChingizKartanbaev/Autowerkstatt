@@ -109,6 +109,28 @@
                         </VBox>
                     </content>
                 </Tab>
+
+                <Tab text="Parts">
+                    <content>
+                        <VBox spacing="10">
+                            <padding>
+                                <Insets top="10" right="10" bottom="10" left="10"/>
+                            </padding>
+                            <HBox spacing="10">
+                                <Button text="Add Part" onAction="#onAddPart"/>
+                            </HBox>
+                            <TableView fx:id="partTable" prefHeight="400" prefWidth="780">
+                                <columns>
+                                    <TableColumn fx:id="colPartId" text="ID"/>
+                                    <TableColumn fx:id="colPartName" text="Name"/>
+                                    <TableColumn fx:id="colPartUnitPrice" text="Unit Price"/>
+                                    <TableColumn fx:id="colPartInStockQty" text="In Stock Qty"/>
+                                </columns>
+                            </TableView>
+                        </VBox>
+                    </content>
+                </Tab>
+
             </tabs>
         </TabPane>
     </center>

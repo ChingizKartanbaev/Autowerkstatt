@@ -22,7 +22,14 @@ public class PartService extends BaseService {
 
     public List<Part> findAll() throws SQLException {
         checkPermission(Permission.READ);
-        return dao.findAll();
+        int userId = authService.getCurrentUser().getUserId();
+        System.out.println("PartService.findAll() called for user ID: " + userId);
+
+        if (authService.isAdmin() || authService.isMechanic()) {
+            return dao.findAll();
+        } else {
+            return dao.findByCreator(userId);
+        }
     }
 
     public List<Part> findByCreator(int userId) throws SQLException {

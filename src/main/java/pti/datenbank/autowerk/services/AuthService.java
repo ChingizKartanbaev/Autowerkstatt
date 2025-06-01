@@ -52,4 +52,16 @@ public class AuthService {
                 return false;
         }
     }
+
+    public boolean isAdmin() {
+        return currentUser != null && "Admin".equalsIgnoreCase(currentUser.getRole().getRoleName());
+    }
+
+    public boolean isMechanic() {
+        return currentUser != null && "Mechanic".equalsIgnoreCase(currentUser.getRole().getRoleName());
+    }
+
+    public boolean isCustomer() {
+        return currentUser != null && "Customer".equalsIgnoreCase(currentUser.getRole().getRoleName());
+    }
 }

@@ -90,13 +90,12 @@
                             </padding>
                             <HBox spacing="10">
                                 <Button text="Add Part" onAction="#onAddPart"/>
-                                <Button text="Edit Part" onAction="#onEditPart"/>
-                                <Button text="Delete Part" onAction="#onDeletePart"/>
                             </HBox>
-                            <TableView fx:id="partTable" prefHeight="400" prefWidth="780">
+                            <TableView fx:id="partTable" prefHeight="400">
                                 <columns>
                                     <TableColumn fx:id="colPartId" text="ID"/>
                                     <TableColumn fx:id="colPartName" text="Name"/>
+                                    <TableColumn fx:id="colPartManufacturer" text="Manufacturer"/>
                                     <TableColumn fx:id="colPartUnitPrice" text="Unit Price"/>
                                     <TableColumn fx:id="colPartInStockQty" text="In Stock Qty"/>
                                 </columns>
