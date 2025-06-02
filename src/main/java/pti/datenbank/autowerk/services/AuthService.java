@@ -36,19 +36,15 @@ public class AuthService {
         String roleName = currentUser.getRole().getRoleName();
         switch (roleName) {
             case "Admin":
-                // Admin may do everything
                 return true;
 
             case "Customer":
             case "Mechanic":
-                // Both Customer and Mechanic may read, create and update,
-                // but not delete
                 return permission == Permission.READ
                         || permission == Permission.CREATE
                         || permission == Permission.UPDATE;
 
             default:
-                // Any other role (or misconfigured role) gets no permissions
                 return false;
         }
     }

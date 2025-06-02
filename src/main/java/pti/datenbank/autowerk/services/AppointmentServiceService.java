@@ -34,7 +34,6 @@ public class AppointmentServiceService extends BaseService {
         dao.deleteByAppointmentId(appointmentId);
     }
 
-
     public List<AppointmentService> findByAppointmentId(int appointmentId) throws SQLException {
         checkPermission(Permission.READ);
         return dao.findByAppointmentId(appointmentId);

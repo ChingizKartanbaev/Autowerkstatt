@@ -13,7 +13,6 @@ public class CustomerService extends BaseService {
     private final VehicleService vehicleService;
     private final AppointmentService appointmentService;
 
-
     public CustomerService(AuthService authService) {
         super(authService);
         this.vehicleService = new VehicleService(authService);
@@ -51,10 +50,6 @@ public class CustomerService extends BaseService {
         if (vehicleService.hasAnyVehicle(customerId)) {
             throw new SQLException("Unable to delete a client: it has tethered machines.");
         }
-
-//        if (appointmentService.hasAnyAppointmentForCustomer(customerId)) {
-//            throw new SQLException("Невозможно удалить клиента: у него есть записи на ремонт.");
-//        }
 
         dao.delete(customerId);
     }

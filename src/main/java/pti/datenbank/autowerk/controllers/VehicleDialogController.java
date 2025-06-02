@@ -55,10 +55,8 @@ public class VehicleDialogController {
         tfPlate.setText(vehicle.getLicensePlate());
         tfYear.setText(String.valueOf(vehicle.getYear()));
 
-        // Устанавливаем клиента в комбо:
         cbCustomer.getSelectionModel().select(vehicle.getCustomer());
 
-        // Если текущий пользователь — Customer, запретим менять выбор:
         User current = authService.getCurrentUser();
         if (current.getRole().getRoleName().equals("Customer")) {
             cbCustomer.setDisable(true);
@@ -75,29 +73,24 @@ public class VehicleDialogController {
 
         try {
             if ("Admin".equals(roleName)) {
-                // Админ видит всех клиентов
                 List<Customer> all = customerService.findAll();
                 customerList.setAll(all);
             }
             else if ("Customer".equals(roleName)) {
-                // Клиент видит только сам себя
                 Customer self = customerService.findByUserId(current.getUserId());
                 customerList.clear();
                 if (self != null) {
                     customerList.add(self);
                 }
-                // Блокируем выбор, т.к. менять нельзя
                 cbCustomer.setDisable(true);
             }
             else {
-                // На всякий случай: если другая роль, ничего не показываем
                 customerList.clear();
                 cbCustomer.setDisable(true);
             }
 
             cbCustomer.setItems(customerList);
 
-            // Настраиваем отображение fullName в ячейках выпадающего списка
             cbCustomer.setCellFactory(param -> new javafx.scene.control.ListCell<>() {
                 @Override
                 protected void updateItem(Customer item, boolean empty) {
@@ -110,7 +103,6 @@ public class VehicleDialogController {
                 }
             });
 
-            // Настраиваем отображение в выбранной (кнопочной) ячейке
             cbCustomer.setButtonCell(new javafx.scene.control.ListCell<>() {
                 @Override
                 protected void updateItem(Customer item, boolean empty) {
@@ -123,7 +115,6 @@ public class VehicleDialogController {
                 }
             });
 
-            // Если это клиент и список непустой, автоматически выбираем единственный элемент
             if ("Customer".equals(roleName) && !customerList.isEmpty()) {
                 cbCustomer.getSelectionModel().selectFirst();
             }
@@ -131,7 +122,7 @@ public class VehicleDialogController {
         } catch (SQLException ex) {
             ex.printStackTrace();
             new Alert(Alert.AlertType.ERROR,
-                    "Ошибка при загрузке списка клиентов:\n" + ex.getMessage()
+                    "Error when loading the list of clients:\n" + ex.getMessage()
             ).showAndWait();
         }
     }

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="pti.datenbank.autowerk.controllers.AppointmentPartDialogController"
+      spacing="10">
+    <padding>
+        <Insets top="15" right="15" bottom="15" left="15"/>
+    </padding>
+
+    <Label text="Добавить запчасть к записи" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+
+    <GridPane hgap="10" vgap="10">
+        <padding>
+            <Insets top="10" right="10" bottom="10" left="10"/>
+        </padding>
+
+        <!-- Строка 0: Выбор Part -->
+        <Label text="Part:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="cbPart"
+                  prefWidth="200"
+                  GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+        <!-- Строка 1: Количество -->
+        <Label text="Quantity:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <TextField fx:id="tfQuantity"
+                   promptText="Введите целое число"
+                   prefWidth="100"
+                   GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+    </GridPane>
+
+    <!-- Кнопки OK / Cancel -->
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button fx:id="btnOk" text="OK"      prefWidth="80" onAction="#handleOk"/>
+        <Button fx:id="btnCancel" text="Cancel"  prefWidth="80" onAction="#handleCancel"/>
+    </HBox>
+</VBox>

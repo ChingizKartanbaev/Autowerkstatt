@@ -11,20 +11,43 @@ import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import pti.datenbank.autowerk.HelloApplication;
+import pti.datenbank.autowerk.models.Appointment;
 import pti.datenbank.autowerk.models.Part;
+import pti.datenbank.autowerk.models.Customer;
+import pti.datenbank.autowerk.models.Vehicle;
+import pti.datenbank.autowerk.models.Mechanic;
 import pti.datenbank.autowerk.services.AuthService;
+import pti.datenbank.autowerk.services.CustomerService;
+import pti.datenbank.autowerk.services.MechanicService;
 import pti.datenbank.autowerk.services.PartService;
+import pti.datenbank.autowerk.services.AppointmentPartService;
+import pti.datenbank.autowerk.services.facade.AppointmentFacade;
 
 import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class MechanicController {
 
-    @FXML private MenuItem logoutMenu;
-    @FXML private MenuItem exitMenu;
+    // === SERVICES ===
+    private PartService partService;
+    private AppointmentFacade appointmentFacade;
+    private MechanicService mechanicService;
+    private CustomerService customerService;
+    private AppointmentPartService appointmentPartService;
+
+    private AuthService authService;
+    private MechanicProfileController profileController;
+
+    // === PROFILE TAB ===
     @FXML private Tab tabProfile;
     @FXML private VBox profileRoot;
+
+    // ==== PART TAB ====
     @FXML private TableView<Part> partTable;
     @FXML private TableColumn<Part, Integer> colPartId;
     @FXML private TableColumn<Part, String> colPartName;
@@ -32,21 +55,33 @@ public class MechanicController {
     @FXML private TableColumn<Part, BigDecimal> colPartUnitPrice;
     @FXML private TableColumn<Part, Integer> colPartInStockQty;
 
+    // ==== APPOINTMENTS TAB ====
+    @FXML private TableView<Appointment> appointmentTable;
+    @FXML private TableColumn<Appointment, Integer> colAppId;
+    @FXML private TableColumn<Appointment, String>  colAppCustomer;
+    @FXML private TableColumn<Appointment, String>  colAppVehicle;
+    @FXML private TableColumn<Appointment, String>  colAppDateTime;
+    @FXML private TableColumn<Appointment, String>  colAppStatus;
+
+    @FXML private MenuItem logoutMenu;
+    @FXML private MenuItem exitMenu;
+
     private final ObservableList<Part> partList = FXCollections.observableArrayList();
-    private PartService partService;
-
-
-    private AuthService authService;
-    private MechanicProfileController profileController;
+    private final ObservableList<Appointment> appointmentList = FXCollections.observableArrayList();
 
     public void setAuthService(AuthService authService) {
         this.authService = authService;
+        this.mechanicService = new MechanicService(authService);
+        this.customerService = new CustomerService(authService);
         this.partService = new PartService(authService);
+        this.appointmentFacade = new AppointmentFacade(authService);
+        this.appointmentPartService = new AppointmentPartService(authService);
         loadParts();
+        loadMyAppointments();
 
         if (profileController != null) {
             profileController.setServices(authService);
-            profileController.loadProfile(); // Загружаем только после установки сервисов
+            profileController.loadProfile();
         } else {
             showError("Profile controller is not loaded.");
         }
@@ -63,6 +98,41 @@ public class MechanicController {
             showError("Failed to load profile view:\n" + e.getMessage());
         }
         initPartTable();
+        initAppointmentTable();
+    }
+
+    private void initAppointmentTable() {
+        colAppId.setCellValueFactory(cell ->
+                new ReadOnlyObjectWrapper<>(cell.getValue().getAppointmentId()));
+
+        colAppCustomer.setCellValueFactory(cell -> {
+            Customer c = cell.getValue().getCustomer();
+            String text = (c != null ? c.getFullName() : "-");
+            return new ReadOnlyStringWrapper(text);
+        });
+
+        colAppVehicle.setCellValueFactory(cell -> {
+            Vehicle v = cell.getValue().getVehicle();
+            String text = (v != null
+                    ? v.getMake() + " " + v.getModel() + " (" + v.getLicensePlate() + ")"
+                    : "-");
+            return new ReadOnlyStringWrapper(text);
+        });
+
+        colAppDateTime.setCellValueFactory(cell -> {
+            if (cell.getValue().getScheduledAt() != null) {
+                String formatted = cell.getValue().getScheduledAt()
+                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+                return new ReadOnlyStringWrapper(formatted);
+            } else {
+                return new ReadOnlyStringWrapper("-");
+            }
+        });
+
+        colAppStatus.setCellValueFactory(cell ->
+                new ReadOnlyStringWrapper(cell.getValue().getStatus()));
+
+        appointmentTable.setItems(appointmentList);
     }
 
     private void initPartTable() {
@@ -74,6 +144,65 @@ public class MechanicController {
         partTable.setItems(partList);
     }
 
+    // ========== APPOINTMENTS TAB ==========
+
+    private void loadMyAppointments() {
+        appointmentList.clear();
+        try {
+            Mechanic mech = mechanicService.findByUserId(authService.getCurrentUser().getUserId());
+            if (mech != null) {
+                int mechId = mech.getMechanicId();
+
+                List<Appointment> list = appointmentFacade.findByMechanicId(mechId);
+
+                appointmentList.setAll(list);
+            }
+        } catch (SQLException ex) {
+            showError("Failed to load your assigned records:\n" + ex.getMessage());
+        }
+    }
+
+    @FXML
+    private void onAddPartToAppointment() {
+        Appointment selected = appointmentTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            Alert w = new Alert(Alert.AlertType.WARNING,
+                    "Please select an entry from the list.", ButtonType.OK);
+            w.setTitle("There's no choice");
+            w.showAndWait();
+            return;
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/pti/datenbank/autowerk/appointment-part-dialog.fxml")
+            );
+            Parent page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Add spare part to entry ID=" + selected.getAppointmentId());
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(appointmentTable.getScene().getWindow());
+            dialogStage.setScene(new Scene(page));
+
+            AppointmentPartDialogController ctrl = loader.getController();
+            ctrl.setDialogStage(dialogStage);
+            ctrl.setServices(authService, partService, selected, appointmentPartService);
+
+            dialogStage.showAndWait();
+
+            if (ctrl.isOkClicked()) {
+                loadMyAppointments();
+            }
+        } catch (Exception ex) {
+            showError("Failed to open the Add Part dialog box:\n" + ex.getMessage());
+        }
+    }
+
+    @FXML
+    private void onRefreshAppointments() {
+        loadMyAppointments();
+    }
 
     @FXML
     private void onLogout(ActionEvent event) {
@@ -111,7 +240,6 @@ public class MechanicController {
             showError("Error opening Part Dialog:\n" + e.getMessage());
         }
     }
-
 
     private void showError(String msg) {
         Alert a = new Alert(Alert.AlertType.ERROR);

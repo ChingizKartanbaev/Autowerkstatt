@@ -197,7 +197,7 @@ public class AdminController implements Initializable {
         try {
             partList.setAll(partService.findAll());
         } catch (SQLException e) {
-            showError("Не удалось загрузить список деталей:\n" + e.getMessage());
+            showError("Failed to load parts list:\n" + e.getMessage());
         }
     }
 
@@ -205,7 +205,7 @@ public class AdminController implements Initializable {
         try {
             vehicleList.setAll(vehicleService.findAll());
         } catch (SQLException e) {
-            showError("Не удалось загрузить список машин:\n" + e.getMessage());
+            showError("Failed to load the machine list:\n" + e.getMessage());
         }
     }
 
@@ -716,7 +716,6 @@ public class AdminController implements Initializable {
             showError("Failed to delete the machine:\n" + ex.getMessage());
         }
     }
-
 
     @FXML private void onLogout() {
         authService.logout();

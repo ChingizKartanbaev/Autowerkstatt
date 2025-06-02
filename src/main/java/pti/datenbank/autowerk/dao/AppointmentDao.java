@@ -3,7 +3,6 @@ package pti.datenbank.autowerk.dao;
 import pti.datenbank.autowerk.models.Appointment;
 
 import java.sql.SQLException;
-import java.time.LocalDateTime;
 import java.util.List;
 
 public interface AppointmentDao extends GenericDao<Appointment, Integer> {

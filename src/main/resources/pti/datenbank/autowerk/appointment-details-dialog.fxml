@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="pti.datenbank.autowerk.controllers.AppointmentDetailsController"
+      spacing="10">
+    <padding>
+        <Insets top="15" right="15" bottom="15" left="15"/>
+    </padding>
+
+    <GridPane hgap="10" vgap="10">
+        <padding>
+            <Insets top="10" right="10" bottom="10" left="10"/>
+        </padding>
+
+        <!-- Строка 0: ID записи -->
+        <Label text="Appointment ID:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <Label fx:id="lblAppointmentId"
+               GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+        <!-- Строка 1: Машина -->
+        <Label text="Vehicle:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <Label fx:id="lblVehicle"
+               GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+        <!-- Строка 2: Mechanic -->
+        <Label text="Mechanic:" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <Label fx:id="lblMechanic"
+               GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+        <!-- Строка 3: Дата/Время -->
+        <Label text="Date and Time:" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <Label fx:id="lblDateTime"
+               GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+        <!-- Строка 4: Статус -->
+        <Label text="Status:" GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+        <Label fx:id="lblStatus"
+               GridPane.rowIndex="4" GridPane.columnIndex="1"/>
+
+        <!-- Строка 6: Service Types -->
+        <Label text="Service Types:" GridPane.rowIndex="6" GridPane.columnIndex="0"
+               GridPane.valignment="TOP"/>
+        <TextArea fx:id="taServices"
+                  editable="false"
+                  wrapText="true"
+                  prefRowCount="3"
+                  prefColumnCount="30"
+                  GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+    </GridPane>
+
+    <!-- Кнопка Закрыть -->
+    <HBox alignment="CENTER_RIGHT">
+        <Button text="Close"
+                onAction="#handleClose"
+                prefWidth="80"/>
+    </HBox>
+</VBox>

@@ -62,7 +62,4 @@ public class AppointmentService extends BaseService {
         int cnt = ((AppointmentDaoImpl)appointmentDao).countActiveByVehicle(vehicleId);
         return cnt > 0;
     }
-
-
-
 }

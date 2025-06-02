@@ -35,6 +35,28 @@ public class AppointmentFacade extends BaseService {
         return list;
     }
 
+    public Appointment findByIdWithServices(int appointmentId) throws SQLException {
+        checkPermission(Permission.READ);
+        Appointment ap = appointmentService.findById(appointmentId);
+        if (ap == null) {
+            return null;
+        }
+        List<AppointmentService> services = appointmentServiceService.findByAppointmentId(appointmentId);
+        ap.setServices(services);
+        return ap;
+    }
+
+    public List<Appointment> findByMechanicId(int mechanicId) throws SQLException {
+        checkPermission(Permission.READ);
+        List<Appointment> list = appointmentService.findByMechanicId(mechanicId);
+        for (Appointment ap : list) {
+            int appId = ap.getAppointmentId();
+            List<AppointmentService> services = appointmentServiceService.findByAppointmentId(appId);
+            ap.setServices(services);
+        }
+        return list;
+    }
+
     public void createAppointmentWithServices(Appointment appointment, List<ServiceType> services) throws SQLException {
         checkPermission(Permission.CREATE);
         try (Connection conn = DBConnection.getConnection()) {

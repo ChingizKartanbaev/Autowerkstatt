@@ -160,7 +160,7 @@ public class CustomerController implements Initializable {
                 tfAddress.clear();
             }
         } catch (SQLException ex) {
-            showError("Не удалось загрузить профиль:\n" + ex.getMessage());
+            showError("Failed to load profile:\n" + ex.getMessage());
         }
     }
 
@@ -172,8 +172,8 @@ public class CustomerController implements Initializable {
 
         if (fn.isEmpty() || ph.isEmpty() || addr.isEmpty()) {
             Alert a = new Alert(Alert.AlertType.WARNING);
-            a.setTitle("Неверные данные");
-            a.setHeaderText("Пожалуйста, заполните все поля.");
+            a.setTitle("Incorrect data");
+            a.setHeaderText("Please fill in all fields.");
             a.showAndWait();
             return;
         }
@@ -194,10 +194,10 @@ public class CustomerController implements Initializable {
                 newCust.setAddress(addr);
                 customerService.create(newCust);
             }
-            Alert ok = new Alert(Alert.AlertType.INFORMATION, "Профиль успешно сохранён.", ButtonType.OK);
+            Alert ok = new Alert(Alert.AlertType.INFORMATION, "Profile successfully saved.", ButtonType.OK);
             ok.showAndWait();
         } catch (SQLException ex) {
-            showError("Ошибка при сохранении профиля:\n" + ex.getMessage());
+            showError("Error when saving a profile:\n" + ex.getMessage());
         }
     }
 
@@ -228,7 +228,7 @@ public class CustomerController implements Initializable {
                 vehicleList.setAll(list);
             }
         } catch (SQLException ex) {
-            showError("Не удалось загрузить список машин:\n" + ex.getMessage());
+            showError("Failed to load the machine list:\n" + ex.getMessage());
         }
     }
 
@@ -256,7 +256,7 @@ public class CustomerController implements Initializable {
                 loadUserVehicles();
             }
         } catch (Exception ex) {
-            showError("Не удалось открыть диалог добавления машины:\n" + ex.getMessage());
+            showError("Failed to open the Add Machine dialog box:\n" + ex.getMessage());
         }
     }
 
@@ -265,8 +265,8 @@ public class CustomerController implements Initializable {
         Vehicle selected = vehicleTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
             Alert w = new Alert(Alert.AlertType.WARNING,
-                    "Пожалуйста, выберите машину из списка.", ButtonType.OK);
-            w.setTitle("Нет выбора");
+                    "Please select a machine from the list.", ButtonType.OK);
+            w.setTitle("There's no choice");
             w.showAndWait();
             return;
         }
@@ -294,7 +294,7 @@ public class CustomerController implements Initializable {
                 loadUserVehicles();
             }
         } catch (Exception ex) {
-            showError("Не удалось открыть диалог редактирования машины:\n" + ex.getMessage());
+            showError("Failed to open the machine editing dialog box:\n" + ex.getMessage());
         }
     }
 
@@ -303,8 +303,8 @@ public class CustomerController implements Initializable {
         Vehicle selected = vehicleTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
             Alert w = new Alert(Alert.AlertType.WARNING,
-                    "Пожалуйста, выберите машину из списка.", ButtonType.OK);
-            w.setTitle("Нет выбора");
+                    "Please select a car from the list.", ButtonType.OK);
+            w.setTitle("There's no choice");
             w.showAndWait();
             return;
         }
@@ -313,23 +313,23 @@ public class CustomerController implements Initializable {
             boolean hasActive = appointmentService.hasActiveAppointmentsForVehicle(selected.getVehicleId());
             if (hasActive) {
                 Alert info = new Alert(Alert.AlertType.INFORMATION,
-                        "Невозможно удалить машину, у которой есть активные записи на ремонт.",
+                        "Cannot delete a car that has active repair records.",
                         ButtonType.OK);
-                info.setTitle("Удаление запрещено");
+                info.setTitle("Deletion is forbidden");
                 info.showAndWait();
                 return;
             }
         } catch (SQLException e) {
-            showError("Ошибка при проверке активных записей:\n" + e.getMessage());
+            showError("Error when checking active records:\n" + e.getMessage());
             return;
         }
 
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-                "Вы точно хотите удалить машину \"" +
+                "You definitely want to delete the machine \"" +
                         selected.getMake() + " " + selected.getModel() + "\"?",
                 ButtonType.YES, ButtonType.NO);
         confirm.initOwner(vehicleTable.getScene().getWindow());
-        confirm.setTitle("Удалить машину");
+        confirm.setTitle("Remove the machine");
         Optional<ButtonType> result = confirm.showAndWait();
         if (result.isEmpty() || result.get() != ButtonType.YES) {
             return;
@@ -339,13 +339,11 @@ public class CustomerController implements Initializable {
             vehicleService.delete(selected.getVehicleId());
             loadUserVehicles();
         } catch (SQLException ex) {
-            showError("Не удалось удалить машину:\n" + ex.getMessage());
+            showError("Failed to delete the machine:\n" + ex.getMessage());
         }
     }
 
-//     ===================================
 //     === Appointments Tab Methods    ===
-//     ===================================
     private void initAppointmentTable() {
         colAppId.setCellValueFactory(cell ->
                 new ReadOnlyObjectWrapper<>(cell.getValue().getAppointmentId()));
@@ -387,7 +385,7 @@ public class CustomerController implements Initializable {
                 appointmentList.setAll(list);
             }
         } catch (SQLException ex) {
-            showError("Не удалось загрузить список записей:\n" + ex.getMessage());
+            showError("Failed to load the list of records:\n" + ex.getMessage());
         }
     }
 
@@ -399,7 +397,7 @@ public class CustomerController implements Initializable {
             Parent page = loader.load();
 
             Stage dialogStage = new Stage();
-            dialogStage.setTitle("Новая запись");
+            dialogStage.setTitle("New entry");
             dialogStage.initModality(Modality.WINDOW_MODAL);
             dialogStage.initOwner(appointmentTable.getScene().getWindow());
             dialogStage.setScene(new Scene(page));
@@ -414,7 +412,7 @@ public class CustomerController implements Initializable {
                 loadUserAppointments();
             }
         } catch (Exception ex) {
-            showError("Не удалось открыть диалог создания записи:\n" + ex.getMessage());
+            showError("Failed to open the record creation dialog box:\n" + ex.getMessage());
         }
     }
     @FXML
@@ -422,16 +420,16 @@ public class CustomerController implements Initializable {
         Appointment selected = appointmentTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
             Alert w = new Alert(Alert.AlertType.WARNING,
-                    "Пожалуйста, выберите запись из списка.", ButtonType.OK);
-            w.setTitle("Нет выбора");
+                    "Please select an entry from the list.", ButtonType.OK);
+            w.setTitle("There's no choice");
             w.showAndWait();
             return;
         }
 
         if (!"PENDING".equals(selected.getStatus())) {
             Alert info = new Alert(Alert.AlertType.INFORMATION,
-                    "Редактировать можно только записи в статусе \"Pending\".", ButtonType.OK);
-            info.setTitle("Нельзя редактировать");
+                    "Only records with the status “Pending” can be edited", ButtonType.OK);
+            info.setTitle("You can't edit");
             info.showAndWait();
             return;
         }
@@ -442,7 +440,7 @@ public class CustomerController implements Initializable {
             Parent page = loader.load();
 
             Stage dialogStage = new Stage();
-            dialogStage.setTitle("Редактирование записи");
+            dialogStage.setTitle("Editing a record");
             dialogStage.initModality(Modality.WINDOW_MODAL);
             dialogStage.initOwner(appointmentTable.getScene().getWindow());
             dialogStage.setScene(new Scene(page));
@@ -458,7 +456,7 @@ public class CustomerController implements Initializable {
                 loadUserAppointments();
             }
         } catch (Exception ex) {
-            showError("Не удалось открыть диалог редактирования записи:\n" + ex.getMessage());
+            showError("Failed to open the record editing dialog:\n" + ex.getMessage());
         }
     }
 
@@ -467,25 +465,25 @@ public class CustomerController implements Initializable {
         Appointment selected = appointmentTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
             Alert w = new Alert(Alert.AlertType.WARNING,
-                    "Пожалуйста, выберите запись из списка.", ButtonType.OK);
-            w.setTitle("Нет выбора");
+                    "Please select an entry from the list.", ButtonType.OK);
+            w.setTitle("There's no choice");
             w.showAndWait();
             return;
         }
 
         if (!"PENDING".equals(selected.getStatus())) {
             Alert info = new Alert(Alert.AlertType.INFORMATION,
-                    "Отменить можно только записи в статусе \"Pending\".", ButtonType.OK);
-            info.setTitle("Нельзя отменить");
+                    "Only records in “Pending” status can be canceled.", ButtonType.OK);
+            info.setTitle("Can't be undone");
             info.showAndWait();
             return;
         }
 
         Alert confirm = new Alert(Alert.AlertType.CONFIRMATION,
-                "Вы точно хотите отменить запись ID=" + selected.getAppointmentId() + "?",
+                "You definitely want to cancel the recording with ID=" + selected.getAppointmentId() + "?",
                 ButtonType.YES, ButtonType.NO);
         confirm.initOwner(appointmentTable.getScene().getWindow());
-        confirm.setTitle("Отменить запись");
+        confirm.setTitle("Cancel the entry");
         Optional<ButtonType> res = confirm.showAndWait();
         if (res.isEmpty() || res.get() != ButtonType.YES) {
             return;
@@ -497,7 +495,7 @@ public class CustomerController implements Initializable {
                     appointmentServiceService.findByAppointmentId(selected.getAppointmentId()));
             loadUserAppointments();
         } catch (SQLException ex) {
-            showError("Не удалось отменить запись:\n" + ex.getMessage());
+            showError("Failed to cancel the record:\n" + ex.getMessage());
         }
     }
 
@@ -506,39 +504,38 @@ public class CustomerController implements Initializable {
         Appointment selected = appointmentTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
             Alert w = new Alert(Alert.AlertType.WARNING,
-                    "Пожалуйста, выберите запись из списка.", ButtonType.OK);
-            w.setTitle("Нет выбора");
+                    "Please select an entry from the list.", ButtonType.OK);
+            w.setTitle("There's no choice");
             w.showAndWait();
             return;
         }
 
         try {
             FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/pti/datenbank/autowerк/appointment-details-dialog.fxml"));
+                    getClass().getResource("/pti/datenbank/autowerk/appointment-details-dialog.fxml"));
             Parent page = loader.load();
 
             Stage dialogStage = new Stage();
-            dialogStage.setTitle("Детали записи");
+            dialogStage.setTitle("Recording details");
             dialogStage.initModality(Modality.WINDOW_MODAL);
             dialogStage.initOwner(appointmentTable.getScene().getWindow());
             dialogStage.setScene(new Scene(page));
 
             AppointmentDetailsController ctrl = loader.getController();
-            ctrl.setAppointment(selected);
+            ctrl.setServices(authService);
+            ctrl.setAppointment(selected.getAppointmentId());
             ctrl.setDialogStage(dialogStage);
 
             dialogStage.showAndWait();
         } catch (Exception ex) {
-            showError("Не удалось открыть детали записи:\n" + ex.getMessage());
+            showError("Failed to open record details:\n" + ex.getMessage());
         }
     }
 
-    // =====================================
     // === Общие утилитарные методы     ===
-    // =====================================
     private void showError(String msg) {
         Alert alert = new Alert(Alert.AlertType.ERROR, msg, ButtonType.OK);
-        alert.setTitle("Ошибка");
+        alert.setTitle("Error");
         alert.showAndWait();
     }
 

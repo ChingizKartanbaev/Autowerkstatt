@@ -47,8 +47,3 @@ public class RoleService extends BaseService {
         dao.delete(id);
     }
 }
-
-
-
-
-

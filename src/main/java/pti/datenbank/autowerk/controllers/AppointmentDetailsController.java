@@ -4,10 +4,15 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
 import javafx.stage.Stage;
 import pti.datenbank.autowerk.models.Appointment;
+import pti.datenbank.autowerk.services.AuthService;
+import pti.datenbank.autowerk.services.facade.AppointmentFacade;
 
+import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
+import java.util.stream.Collectors;
 
 public class AppointmentDetailsController {
 
@@ -16,17 +21,24 @@ public class AppointmentDetailsController {
     @FXML private Label lblMechanic;
     @FXML private Label lblDateTime;
     @FXML private Label lblStatus;
-    @FXML private Label lblDescription;
+    @FXML private TextArea taServices;
 
     private Stage dialogStage;
+    private AuthService authService;
+    private AppointmentFacade appointmentFacade;
     private Appointment appointment;
+
+    public void setServices(AuthService authService) {
+        this.authService = authService;
+        this.appointmentFacade = new AppointmentFacade(authService);
+    }
 
     public void setDialogStage(Stage dialogStage) {
         this.dialogStage = dialogStage;
     }
 
-    public void setAppointment(Appointment appointment) {
-        this.appointment = appointment;
+    public void setAppointment(int appointmentId) throws SQLException {
+        this.appointment = appointmentFacade.findByIdWithServices(appointmentId);
         fillFields();
     }
 
@@ -35,25 +47,41 @@ public class AppointmentDetailsController {
 
         lblAppointmentId.setText(String.valueOf(appointment.getAppointmentId()));
 
-        var veh = appointment.getVehicle();
-        if (veh != null) {
-            lblVehicle.setText(veh.getMake() + " " + veh.getModel() +
-                    " (" + veh.getLicensePlate() + ")");
+        if (appointment.getVehicle() != null) {
+            String vehDesc = appointment.getVehicle().getMake()
+                    + " " + appointment.getVehicle().getModel()
+                    + " (" + appointment.getVehicle().getLicensePlate() + ")";
+            lblVehicle.setText(vehDesc);
         } else {
             lblVehicle.setText("-");
         }
 
-        var mech = appointment.getMechanic();
-        lblMechanic.setText(mech != null ? mech.getFullName() : "-");
+        if (appointment.getMechanic() != null) {
+            lblMechanic.setText(appointment.getMechanic().getFullName());
+        } else {
+            lblMechanic.setText("-");
+        }
 
-        var dt = appointment.getScheduledAt();
-        if (dt != null) {
-            lblDateTime.setText(dt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+        if (appointment.getScheduledAt() != null) {
+            String formatted = appointment.getScheduledAt()
+                    .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+            lblDateTime.setText(formatted);
         } else {
             lblDateTime.setText("-");
         }
 
-        lblStatus.setText(appointment.getStatus() != null ? appointment.getStatus() : "-");
+        lblStatus.setText(appointment.getStatus());
+
+        if (appointment.getServices() != null && !appointment.getServices().isEmpty()) {
+            String servicesList = appointment.getServices().stream()
+                    .map(srv -> srv.getServiceType().getName())
+                    .collect(Collectors.joining("\n"));
+            taServices.setText(servicesList);
+        } else {
+            taServices.setText("(no services)");
+        }
+
+        taServices.positionCaret(0);
     }
 
     @FXML
@@ -62,7 +90,7 @@ public class AppointmentDetailsController {
             dialogStage.close();
         } else {
             new Alert(Alert.AlertType.ERROR,
-                    "Невозможно закрыть окно: Stage не задан.", ButtonType.OK)
+                    "Unable to close the window: Stage not set.", ButtonType.OK)
                     .showAndWait();
         }
     }

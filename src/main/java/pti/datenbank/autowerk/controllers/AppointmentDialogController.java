@@ -48,7 +48,6 @@ public class AppointmentDialogController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        // Настроим отображение текста в ComboBox для Vehicle и Mechanic
         cbVehicle.setCellFactory(listView -> new ListCell<>() {
             @Override
             protected void updateItem(Vehicle item, boolean empty) {
@@ -117,11 +116,9 @@ public class AppointmentDialogController implements Initializable {
         loadServiceTypesIntoComboBox();
     }
 
-
     public void setDialogStage(Stage dialogStage) {
         this.dialogStage = dialogStage;
     }
-
 
     public void setAppointment(Appointment appointment) {
         this.appointment = appointment;
@@ -140,7 +137,6 @@ public class AppointmentDialogController implements Initializable {
         }
     }
 
-
     private void loadMechanicsIntoComboBox() {
         mechanicList.clear();
         try {
@@ -148,7 +144,7 @@ public class AppointmentDialogController implements Initializable {
             mechanicList.setAll(all);
             cbMechanic.setItems(mechanicList);
         } catch (SQLException ex) {
-            showError("Не удалось загрузить список механиков:\n" + ex.getMessage());
+            showError("Failed to load the list of mechanics:\n" + ex.getMessage());
         }
     }
 
@@ -167,7 +163,7 @@ public class AppointmentDialogController implements Initializable {
             }
             cbVehicle.setItems(vehicleList);
         } catch (SQLException ex) {
-            showError("Не удалось загрузить список машин:\n" + ex.getMessage());
+            showError("Failed to load the machine list:\n" + ex.getMessage());
         }
     }
 
@@ -178,7 +174,7 @@ public class AppointmentDialogController implements Initializable {
             serviceTypeList.setAll(all);
             cbServiceType.setItems(serviceTypeList);
         } catch (SQLException ex) {
-            showError("Не удалось загрузить список типов сервисных услуг:\n" + ex.getMessage());
+            showError("Failed to load the list of service types:\n" + ex.getMessage());
         }
     }
 
@@ -193,29 +189,29 @@ public class AppointmentDialogController implements Initializable {
         String timeText = tfTime.getText().trim();
 
         if (selVeh == null) {
-            err.append("– выберите машину\n");
+            err.append("– select a car\n");
         }
         if (selMech == null) {
-            err.append("– выберите механика\n");
+            err.append("– select a mechanic\n");
         }
         if (date == null) {
-            err.append("– выберите дату\n");
+            err.append("– select a date\n");
         }
         if (timeText.isEmpty()) {
-            err.append("– введите время (HH:mm)\n");
+            err.append("– enter the time (HH:mm)\n");
         } else {
             try {
                 LocalTime.parse(timeText, DateTimeFormatter.ofPattern("HH:mm"));
             } catch (Exception e) {
-                err.append("– неверный формат времени (ожидается HH:mm)\n");
+                err.append("– Incorrect time format (expected HH:mm)\n");
             }
         }
 
         if (err.length() > 0) {
             Alert warning = new Alert(Alert.AlertType.WARNING);
             warning.initOwner(dialogStage);
-            warning.setTitle("Некорректные данные");
-            warning.setHeaderText("Пожалуйста, исправьте:");
+            warning.setTitle("Incorrect data");
+            warning.setHeaderText("Please correct:");
             warning.setContentText(err.toString());
             warning.showAndWait();
             return;
@@ -251,7 +247,7 @@ public class AppointmentDialogController implements Initializable {
             okClicked = true;
             dialogStage.close();
         } catch (SQLException ex) {
-            showError("Ошибка при сохранении записи:\n" + ex.getMessage());
+            showError("Error when saving a record:\n" + ex.getMessage());
         }
     }
 
@@ -267,7 +263,7 @@ public class AppointmentDialogController implements Initializable {
     private void showError(String msg) {
         Alert alert = new Alert(Alert.AlertType.ERROR, msg, ButtonType.OK);
         alert.initOwner(dialogStage);
-        alert.setTitle("Ошибка");
+        alert.setTitle("Error");
         alert.showAndWait();
     }
 }

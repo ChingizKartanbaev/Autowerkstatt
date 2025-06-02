@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml"
+      fx:controller="pti.datenbank.autowerk.controllers.MechanicAppointmentDialogController"
+      spacing="10" padding="15">
+
+    <GridPane hgap="10" vgap="10">
+        <padding>
+            <Insets top="10" right="10" bottom="10" left="10"/>
+        </padding>
+
+        <!-- Строка 0: ID записи -->
+        <Label text="Appointment ID:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <Label fx:id="lblAppId" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
+
+        <!-- Строка 1: Клиент -->
+        <Label text="Customer:"     GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <Label fx:id="lblCustomer" GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+
+        <!-- Строка 2: Машина -->
+        <Label text="Vehicle:"     GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <Label fx:id="lblVehicle"  GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+
+        <!-- Строка 3: Дата/Время -->
+        <Label text="Scheduled:"     GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <Label fx:id="lblDateTime"   GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+
+        <!-- Строка 4: Текущий статус -->
+        <Label text="Status:"         GridPane.rowIndex="4" GridPane.columnIndex="0"/>
+        <ComboBox fx:id="cbStatus"    GridPane.rowIndex="4" GridPane.columnIndex="1" prefWidth="150"/>
+
+        <!-- Строка 5: Комментарий механика -->
+        <Label text="Work Notes:" GridPane.rowIndex="5" GridPane.columnIndex="0" GridPane.valignment="TOP"/>
+        <TextArea fx:id="taNotes"
+                  prefRowCount="4" prefColumnCount="30" wrapText="true"
+                  GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+    </GridPane>
+
+    <!-- Кнопки Save / Cancel -->
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button text="Save"   onAction="#handleSave"   prefWidth="80"/>
+        <Button text="Cancel" onAction="#handleCancel" prefWidth="80"/>
+    </HBox>
+</VBox>

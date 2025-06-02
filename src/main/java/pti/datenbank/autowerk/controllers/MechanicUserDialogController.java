@@ -61,17 +61,17 @@ public class MechanicUserDialogController {
     @FXML
     private void handleOk() {
         StringBuilder err = new StringBuilder();
-        if (tfUsername.getText().trim().isEmpty()) err.append("– введите username\n");
-        if (editingUser == null && pfPassword.getText().isEmpty()) err.append("– введите пароль\n");
-        if (tfEmail.getText().trim().isEmpty())    err.append("– введите email\n");
-        if (tfFullName.getText().trim().isEmpty()) err.append("– введите полное имя\n");
-        if (tfSpecialty.getText().trim().isEmpty())err.append("– введите специализацию\n");
+        if (tfUsername.getText().trim().isEmpty()) err.append("– enter username\n");
+        if (editingUser == null && pfPassword.getText().isEmpty()) err.append("– enter the password\n");
+        if (tfEmail.getText().trim().isEmpty())    err.append("– enter your email\n");
+        if (tfFullName.getText().trim().isEmpty()) err.append("– enter a full name\n");
+        if (tfSpecialty.getText().trim().isEmpty())err.append("– enter a specialty\n");
 
         if (err.length() > 0) {
             Alert alert = new Alert(Alert.AlertType.WARNING);
             alert.initOwner(dialogStage);
-            alert.setTitle("Неверные данные");
-            alert.setHeaderText("Пожалуйста, исправьте:");
+            alert.setTitle("Incorrect data");
+            alert.setHeaderText("Please correct:");
             alert.setContentText(err.toString());
             alert.showAndWait();
             return;
@@ -121,7 +121,7 @@ public class MechanicUserDialogController {
         } catch (SQLException ex) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.initOwner(dialogStage);
-            alert.setTitle("Ошибка при сохранении");
+            alert.setTitle("Error when saving");
             alert.setHeaderText(null);
             alert.setContentText(ex.getMessage());
             alert.showAndWait();

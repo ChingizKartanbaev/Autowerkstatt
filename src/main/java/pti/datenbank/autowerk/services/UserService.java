@@ -15,45 +15,33 @@ public class UserService extends BaseService {
         super(authService);
     }
 
-    /** Получить пользователя по ID */
     public User findById(int id) throws SQLException {
         checkPermission(Permission.READ);
         return dao.findById(id);
     }
 
-    /** Получить пользователя по имени */
     public User findByUsername(String username) throws SQLException {
         checkPermission(Permission.READ);
         return dao.findByUsername(username);
     }
 
-    /** Получить всех пользователей */
     public List<User> findAll() throws SQLException {
         checkPermission(Permission.READ);
         return dao.findAll();
     }
 
-    /** Создать нового пользователя */
     public void create(User user) throws SQLException {
         checkPermission(Permission.CREATE);
         dao.insert(user);
     }
 
-    /** Обновить существующего пользователя */
     public void update(User user) throws SQLException {
         checkPermission(Permission.UPDATE);
         dao.update(user);
     }
 
-    /** Удалить пользователя по ID */
     public void delete(int id) throws SQLException {
         checkPermission(Permission.DELETE);
         dao.delete(id);
     }
 }
-
-
-
-
-
-

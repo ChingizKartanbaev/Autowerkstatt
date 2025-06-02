@@ -26,6 +26,30 @@
                     </content>
                 </Tab>
 
+                <!-- MY APPOINTMENTS TAB -->
+                <Tab text="My Appointments">
+                    <content>
+                        <VBox spacing="10">
+                            <padding>
+                                <Insets top="10" right="10" bottom="10" left="10"/>
+                            </padding>
+                            <HBox spacing="10">
+                                <Button text="Refresh"       onAction="#onRefreshAppointments"/>
+                                <Button text="Add Part"      onAction="#onAddPartToAppointment"/>
+                            </HBox>
+                            <TableView fx:id="appointmentTable" prefHeight="400" prefWidth="780">
+                                <columns>
+                                    <TableColumn fx:id="colAppId"       text="ID"       prefWidth="60"/>
+                                    <TableColumn fx:id="colAppCustomer" text="Customer" prefWidth="150"/>
+                                    <TableColumn fx:id="colAppVehicle"  text="Vehicle"  prefWidth="180"/>
+                                    <TableColumn fx:id="colAppDateTime" text="Date/Time" prefWidth="140"/>
+                                    <TableColumn fx:id="colAppStatus"   text="Status"   prefWidth="100"/>
+                                </columns>
+                            </TableView>
+                        </VBox>
+                    </content>
+                </Tab>
+
                 <!-- PARTS TAB -->
                 <Tab text="Parts">
                     <content>
