@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 public interface AppointmentPartDao {
+    AppointmentPart findOne(int appointmentId, int partId) throws SQLException;
     void insert(AppointmentPart entity) throws SQLException;
     void updateQuantity(int appointmentId, int partId, int quantity) throws SQLException;
     void delete(int appointmentId, int partId) throws SQLException;

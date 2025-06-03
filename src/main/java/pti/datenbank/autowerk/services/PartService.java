@@ -32,6 +32,11 @@ public class PartService extends BaseService {
         }
     }
 
+
+    public List<Part> findAllForCustomer() throws SQLException {
+        return dao.findAll();
+    }
+
     public List<Part> findByCreator(int userId) throws SQLException {
         checkPermission(Permission.READ);
         return dao.findByCreator(userId);

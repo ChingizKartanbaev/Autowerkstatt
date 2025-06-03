@@ -13,7 +13,7 @@ public class VehicleDaoImpl implements VehicleDao {
     private static final String SELECT_BY_ID = "SELECT VehicleID, CustomerID, LicensePlate, Make, Model, Year FROM Vehicles WHERE VehicleID = ?";
     private static final String SELECT_ALL = "SELECT VehicleID, CustomerID, LicensePlate, Make, Model, Year FROM Vehicles";
     private static final String INSERT_SQL = "INSERT INTO Vehicles (CustomerID, LicensePlate, Make, Model, Year) VALUES (?, ?, ?, ?, ?)";
-    private static final String UPDATE_SQL = "UPDATE Vehicles SET LicensePlate = ?, Make = ?, Model = ?, Year = ? WHERE VehicleID = ?";
+    private static final String UPDATE_SQL = "UPDATE Vehicles SET CustomerID = ?, LicensePlate = ?, Make = ?, Model = ?, Year = ? WHERE VehicleID = ?";
     private static final String DELETE_SQL = "DELETE FROM Vehicles WHERE VehicleID = ?";
     private static final String SELECT_BY_CUST = "SELECT VehicleID, CustomerID, LicensePlate, Make, Model, Year FROM Vehicles WHERE CustomerID = ?";
 
@@ -55,14 +55,21 @@ public class VehicleDaoImpl implements VehicleDao {
     public void update(Vehicle v) throws SQLException {
         try (Connection c = DBConnection.getConnection();
              PreparedStatement ps = c.prepareStatement(UPDATE_SQL)) {
-            ps.setString(1, v.getLicensePlate());
-            ps.setString(2, v.getMake());
-            ps.setString(3, v.getModel());
-            if (v.getYear()!=null) ps.setInt(4, v.getYear()); else ps.setNull(4, Types.INTEGER);
-            ps.setInt(5, v.getVehicleId());
+
+            ps.setInt(1, v.getCustomer().getCustomerId());
+            ps.setString(2, v.getLicensePlate());
+            ps.setString(3, v.getMake());
+            ps.setString(4, v.getModel());
+
+            if (v.getYear() != null) ps.setInt(5, v.getYear());
+            else ps.setNull(5, Types.INTEGER);
+
+            ps.setInt(6, v.getVehicleId());
+
             ps.executeUpdate();
         }
     }
+
     @Override
     public void delete(Integer id) throws SQLException {
         try (Connection c = DBConnection.getConnection();

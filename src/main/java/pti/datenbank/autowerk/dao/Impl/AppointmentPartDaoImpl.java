@@ -100,4 +100,28 @@ public class AppointmentPartDaoImpl implements AppointmentPartDao {
         ap.setQuantity(qty);
         return ap;
     }
+
+    @Override
+    public AppointmentPart findOne(int appointmentId, int partId) throws SQLException {
+        String sql = "SELECT * FROM AppointmentParts WHERE AppointmentID = ? AND PartID = ?";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, appointmentId);
+            ps.setInt(2, partId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    AppointmentPart ap = new AppointmentPart();
+                    ap.setAppointment(new Appointment()); // можно доработать при необходимости
+                    ap.getAppointment().setAppointmentId(appointmentId);
+                    Part part = new Part();
+                    part.setPartId(partId);
+                    ap.setPart(part);
+                    ap.setQuantity(rs.getInt("Quantity"));
+                    return ap;
+                }
+            }
+        }
+        return null;
+    }
+
 }

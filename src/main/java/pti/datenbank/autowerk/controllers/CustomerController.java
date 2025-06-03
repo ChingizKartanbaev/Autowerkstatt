@@ -35,6 +35,7 @@ public class CustomerController implements Initializable {
     private AppointmentFacade appointmentFacade;
     private ServiceTypeService serviceTypeService;
     private AppointmentServiceService appointmentServiceService;
+    private PartService partService;
 
     private MechanicService mechanicService;
 
@@ -61,14 +62,23 @@ public class CustomerController implements Initializable {
     @FXML private TableColumn<Appointment, String>  colAppDateTime;
     @FXML private TableColumn<Appointment, String>  colAppStatus;
 
+    // === Part tab ===
     @FXML private TableView<Part> partTable;
     @FXML private TableColumn<Part, Integer> colPartId;
     @FXML private TableColumn<Part, String> colPartName;
     @FXML private TableColumn<Part, java.math.BigDecimal> colPartUnitPrice;
     @FXML private TableColumn<Part, Integer> colPartInStockQty;
 
+    // === Mechanic tab ===
+    @FXML private TableView<Mechanic> mechanicTable;
+    @FXML private TableColumn<Mechanic, Integer> colMechId;
+    @FXML private TableColumn<Mechanic, String> colMechName;
+    @FXML private TableColumn<Mechanic, String> colMechSpecialty;
+
+    private final ObservableList<Mechanic> mechanicList = FXCollections.observableArrayList();
+
+
     private final ObservableList<Part> partList = FXCollections.observableArrayList();
-    private PartService partService;
 
     private final ObservableList<Appointment> appointmentList = FXCollections.observableArrayList();
 
@@ -77,6 +87,7 @@ public class CustomerController implements Initializable {
         initVehicleTable();
         initAppointmentTable();
         initPartTable();
+        initMechanicTable();
     }
 
     public void setAuthService(AuthService authService) {
@@ -95,6 +106,7 @@ public class CustomerController implements Initializable {
         loadUserVehicles();
         loadUserAppointments();
         loadParts();
+        loadMechanics();
     }
 
     // Part Tab
@@ -106,42 +118,55 @@ public class CustomerController implements Initializable {
         partTable.setItems(partList);
     }
 
+    private void initMechanicTable() {
+        colMechId.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getMechanicId()));
+        colMechName.setCellValueFactory(cell -> new ReadOnlyStringWrapper(cell.getValue().getFullName()));
+        colMechSpecialty.setCellValueFactory(cell -> new ReadOnlyStringWrapper(cell.getValue().getSpeciality()));
+        mechanicTable.setItems(mechanicList);
+    }
+
     private void loadParts() {
         try {
-            User current = authService.getCurrentUser();
-            partList.setAll(partService.findByCreator(current.getUserId()));
-
+            partList.setAll(partService.findAllForCustomer());
         } catch (SQLException e) {
             showError("Failed to load parts: " + e.getMessage());
         }
     }
 
-    @FXML
-    private void onAddPart() {
+    private void loadMechanics() {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("/pti/datenbank/autowerk/part-dialog.fxml"));
-            Parent page = loader.load();
-
-            Stage dialogStage = new Stage();
-            dialogStage.setTitle("Add Part");
-            dialogStage.initModality(Modality.WINDOW_MODAL);
-            dialogStage.initOwner(partTable.getScene().getWindow());
-            dialogStage.setScene(new Scene(page));
-
-            PartDialogController dialogCtrl = loader.getController();
-            dialogCtrl.setServices(authService, partService);
-            dialogCtrl.setDialogStage(dialogStage);
-
-            dialogStage.showAndWait();
-
-            if (dialogCtrl.isOkClicked()) {
-                System.out.println("Reloading parts after add...");
-                loadParts();
-            }
-        } catch (Exception e) {
-            showError("Failed to open Part dialog:\n" + e.getMessage());
+            mechanicList.setAll(mechanicService.findAll());
+        } catch (SQLException e) {
+            showError("Failed to load mechanics:\n" + e.getMessage());
         }
     }
+
+//    @FXML
+//    private void onAddPart() {
+//        try {
+//            FXMLLoader loader = new FXMLLoader(getClass().getResource("/pti/datenbank/autowerk/part-dialog.fxml"));
+//            Parent page = loader.load();
+//
+//            Stage dialogStage = new Stage();
+//            dialogStage.setTitle("Add Part");
+//            dialogStage.initModality(Modality.WINDOW_MODAL);
+//            dialogStage.initOwner(partTable.getScene().getWindow());
+//            dialogStage.setScene(new Scene(page));
+//
+//            PartDialogController dialogCtrl = loader.getController();
+//            dialogCtrl.setServices(authService, partService);
+//            dialogCtrl.setDialogStage(dialogStage);
+//
+//            dialogStage.showAndWait();
+//
+//            if (dialogCtrl.isOkClicked()) {
+//                System.out.println("Reloading parts after add...");
+//                loadParts();
+//            }
+//        } catch (Exception e) {
+//            showError("Failed to open Part dialog:\n" + e.getMessage());
+//        }
+//    }
 
     // === Profile Tab  ====
     private void loadUserProfile() {

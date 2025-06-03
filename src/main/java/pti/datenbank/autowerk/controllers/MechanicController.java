@@ -197,6 +197,7 @@ public class MechanicController {
 
             if (ctrl.isOkClicked()) {
                 loadMyAppointments();
+                loadParts();
             }
         } catch (Exception ex) {
             showError("Failed to open the Add Part dialog box:\n" + ex.getMessage());
@@ -204,9 +205,38 @@ public class MechanicController {
     }
 
     @FXML
-    private void onRefreshAppointments() {
-        loadMyAppointments();
+    private void onShowAppointmentDetails() {
+        Appointment selected = appointmentTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            new Alert(Alert.AlertType.WARNING, "Please select an appointment.", ButtonType.OK).showAndWait();
+            return;
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/pti/datenbank/autowerk/appointment-details-dialog.fxml"));
+            Parent page = loader.load();
+
+            AppointmentDetailsController controller = loader.getController();
+            controller.setDialogStage(new Stage());
+            controller.setServices(authService);
+            controller.setAppointment(selected.getAppointmentId());
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Appointment Details - ID=" + selected.getAppointmentId());
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(appointmentTable.getScene().getWindow());
+            dialogStage.setScene(new Scene(page));
+
+            controller.setDialogStage(dialogStage);
+            dialogStage.showAndWait();
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            showError("Failed to open details window:\n" + ex.getMessage());
+        }
     }
+
+
 
     @FXML
     private void onLogout(ActionEvent event) {
@@ -263,6 +293,7 @@ public class MechanicController {
             dialogStage.showAndWait();
 
             if (controller.isOkClicked()) {
+                System.out.println("[DEBUG] okClicked is TRUE — calling loadParts()");
                 loadParts();
             }
 

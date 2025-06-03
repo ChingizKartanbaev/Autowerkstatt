@@ -46,4 +46,8 @@ public class AppointmentPartService extends BaseService {
             appointmentPartDao.delete(apptId, partId);
         }
     }
+
+    public AppointmentPart findOne(int appointmentId, int partId) throws SQLException {
+        return appointmentPartDao.findOne(appointmentId, partId);
+    }
 }

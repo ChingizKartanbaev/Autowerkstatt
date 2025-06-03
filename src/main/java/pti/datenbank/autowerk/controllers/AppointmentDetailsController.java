@@ -7,11 +7,15 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.stage.Stage;
 import pti.datenbank.autowerk.models.Appointment;
+import pti.datenbank.autowerk.models.AppointmentPart;
+import pti.datenbank.autowerk.services.AppointmentPartService;
 import pti.datenbank.autowerk.services.AuthService;
 import pti.datenbank.autowerk.services.facade.AppointmentFacade;
 
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class AppointmentDetailsController {
@@ -22,15 +26,20 @@ public class AppointmentDetailsController {
     @FXML private Label lblDateTime;
     @FXML private Label lblStatus;
     @FXML private TextArea taServices;
+    @FXML private Label lblTotalPrice;
+    @FXML private TextArea taParts;
 
     private Stage dialogStage;
     private AuthService authService;
     private AppointmentFacade appointmentFacade;
     private Appointment appointment;
+    private AppointmentPartService appointmentPartService;
+
 
     public void setServices(AuthService authService) {
         this.authService = authService;
         this.appointmentFacade = new AppointmentFacade(authService);
+        this.appointmentPartService = new AppointmentPartService(authService);
     }
 
     public void setDialogStage(Stage dialogStage) {
@@ -40,6 +49,7 @@ public class AppointmentDetailsController {
     public void setAppointment(int appointmentId) throws SQLException {
         this.appointment = appointmentFacade.findByIdWithServices(appointmentId);
         fillFields();
+        loadParts();
     }
 
     private void fillFields() {
@@ -82,6 +92,50 @@ public class AppointmentDetailsController {
         }
 
         taServices.positionCaret(0);
+
+        try {
+            // Общая стоимость услуг
+            double serviceTotal = 0.0;
+            if (appointment.getServices() != null) {
+                serviceTotal = appointment.getServices().stream()
+                        .map(s -> s.getServiceType().getBasePrice())
+                        .mapToDouble(BigDecimal::doubleValue)
+                        .sum();
+            }
+
+            // Общая стоимость деталей
+            double partsTotal = 0.0;
+            var appointmentPartService = new pti.datenbank.autowerk.services.AppointmentPartService(authService);
+            var parts = appointmentPartService.findByAppointmentId(appointment.getAppointmentId());
+
+            partsTotal = parts.stream()
+                    .mapToDouble(p -> p.getPart().getUnitPrice().doubleValue() * p.getQuantity())
+                    .sum();
+
+            double total = serviceTotal + partsTotal;
+            lblTotalPrice.setText(String.format("%.2f €", total));
+
+        } catch (Exception e) {
+            lblTotalPrice.setText("Ошибка расчёта");
+            e.printStackTrace(); // или showError, если хочешь alert
+        }
+    }
+
+    private void loadParts() {
+        try {
+            List<AppointmentPart> parts = appointmentPartService.findByAppointmentId(appointment.getAppointmentId());
+            if (parts.isEmpty()) {
+                taParts.setText("(no parts used)");
+            } else {
+                String list = parts.stream()
+                        .map(ap -> ap.getPart().getName() + " × " + ap.getQuantity())
+                        .collect(Collectors.joining("\n"));
+                taParts.setText(list);
+            }
+            taParts.positionCaret(0);
+        } catch (SQLException ex) {
+            taParts.setText("Failed to load parts:\n" + ex.getMessage());
+        }
     }
 
     @FXML

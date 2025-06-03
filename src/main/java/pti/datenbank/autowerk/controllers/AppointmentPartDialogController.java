@@ -111,7 +111,7 @@ public class AppointmentPartDialogController implements Initializable {
                 if (qty <= 0) {
                     err.append("– the number must be a positive number\n");
                 } else if (selectedPart != null && qty > selectedPart.getInStockQty()) {
-                    err.append("– there are not enough spare parts in stock (available: ")
+                    err.append("– not enough parts in stock (available: ")
                             .append(selectedPart.getInStockQty()).append(")\n");
                 }
             } catch (NumberFormatException e) {
@@ -120,32 +120,42 @@ public class AppointmentPartDialogController implements Initializable {
         }
 
         if (err.length() > 0) {
-            Alert a = new Alert(Alert.AlertType.WARNING);
-            a.initOwner(dialogStage);
-            a.setTitle("Incorrect data");
-            a.setHeaderText("Please correct:");
-            a.setContentText(err.toString());
-            a.showAndWait();
+            showError(err.toString());
             return;
         }
 
         try {
-            AppointmentPart ap = new AppointmentPart();
-            ap.setAppointment(appointment);
-            ap.setPart(selectedPart);
-            ap.setQuantity(qty);
+            int appointmentId = appointment.getAppointmentId();
+            int partId = selectedPart.getPartId();
 
-            appointmentPartService.create(ap);
+            // Проверяем — уже есть такая пара?
+            AppointmentPart existing = appointmentPartService.findOne(appointmentId, partId);
 
+            if (existing != null) {
+                // Если да — обновляем количество
+                int newQty = existing.getQuantity() + qty;
+                appointmentPartService.updateQuantity(appointmentId, partId, newQty);
+            } else {
+                // Иначе — создаём новую запись
+                AppointmentPart ap = new AppointmentPart();
+                ap.setAppointment(appointment);
+                ap.setPart(selectedPart);
+                ap.setQuantity(qty);
+                appointmentPartService.create(ap);
+            }
+
+            // Обновим склад
             selectedPart.setInStockQty(selectedPart.getInStockQty() - qty);
             partService.update(selectedPart);
 
             okClicked = true;
             dialogStage.close();
         } catch (SQLException ex) {
+            ex.printStackTrace();
             showError("Error when saving a part:\n" + ex.getMessage());
         }
     }
+
 
     @FXML
     private void handleCancel() {

@@ -16,11 +16,8 @@ import javafx.scene.control.TableView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import pti.datenbank.autowerk.HelloApplication;
-import pti.datenbank.autowerk.models.Customer;
-import pti.datenbank.autowerk.models.Vehicle;
-import pti.datenbank.autowerk.models.Mechanic;
-import pti.datenbank.autowerk.models.Part;
-import pti.datenbank.autowerk.models.ServiceType;
+import pti.datenbank.autowerk.models.*;
+import pti.datenbank.autowerk.services.AppointmentService;
 import pti.datenbank.autowerk.services.AuthService;
 import pti.datenbank.autowerk.services.CustomerService;
 import pti.datenbank.autowerk.services.MechanicService;
@@ -32,6 +29,7 @@ import pti.datenbank.autowerk.services.facade.UserFacade;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.SQLException;
+import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
@@ -45,6 +43,7 @@ public class AdminController implements Initializable {
     private PartService partService;
     private VehicleService vehicleService;
     private UserFacade userFacade;
+    private AppointmentService appointmentService;
 
     // ==== Customers tab ==== //
     @FXML private TableView<Customer> customerTable;
@@ -82,13 +81,24 @@ public class AdminController implements Initializable {
     @FXML private TableColumn<Vehicle, String> colVehiclePlate;
     @FXML private TableColumn<Vehicle, Integer> colVehicleYear;
 
+    // ==== Appointment tab ==== //
+    @FXML private TableView<Appointment> allAppointmentTable;
+    @FXML private TableColumn<Appointment, Integer> colAllAppId;
+    @FXML private TableColumn<Appointment, String> colAllAppVehicle;
+    @FXML private TableColumn<Appointment, String> colAllAppCustomer;
+    @FXML private TableColumn<Appointment, String> colAllAppMechanic;
+    @FXML private TableColumn<Appointment, String> colAllAppDateTime;
+    @FXML private TableColumn<Appointment, String> colAllAppStatus;
+
+
+
     // ==== Data lists ==== //
     private final ObservableList<Customer> customerList = FXCollections.observableArrayList();
     private final ObservableList<Mechanic> mechanicList = FXCollections.observableArrayList();
     private final ObservableList<ServiceType> serviceTypeList = FXCollections.observableArrayList();
     private final ObservableList<Part> partList = FXCollections.observableArrayList();
     private final ObservableList<Vehicle> vehicleList = FXCollections.observableArrayList();
-
+    private final ObservableList<Appointment> allAppointmentList = FXCollections.observableArrayList();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -97,6 +107,7 @@ public class AdminController implements Initializable {
         initServiceTypeTable();
         initPartTable();
         initVehicleTable();
+        initAllAppointmentTable();
     }
 
     public void setAuthService(AuthService authService) {
@@ -107,6 +118,7 @@ public class AdminController implements Initializable {
         this.partService = new PartService(authService);
         this.vehicleService  = new VehicleService(authService);
         this.userFacade = new UserFacade(authService);
+        this.appointmentService = new AppointmentService(authService);
         try {
             loadAllData();
         } catch (SQLException e) {
@@ -161,12 +173,41 @@ public class AdminController implements Initializable {
         vehicleTable.setItems(vehicleList);
     }
 
+    private void initAllAppointmentTable() {
+        colAllAppId.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getAppointmentId()));
+        colAllAppVehicle.setCellValueFactory(cell -> {
+            Vehicle v = cell.getValue().getVehicle();
+            return new ReadOnlyStringWrapper(v != null ? v.getMake() + " " + v.getModel() : "");
+        });
+
+        colAllAppCustomer.setCellValueFactory(cell -> {
+            Customer cust = cell.getValue().getVehicle().getCustomer();
+            return new ReadOnlyStringWrapper(cust != null ? cust.getFullName() : "");
+        });
+
+        colAllAppMechanic.setCellValueFactory(cell -> {
+            Mechanic m = cell.getValue().getMechanic();
+            return new ReadOnlyStringWrapper(m != null ? m.getFullName() : "");
+        });
+
+        colAllAppDateTime.setCellValueFactory(cell -> {
+            var dt = cell.getValue().getScheduledAt();
+            return new ReadOnlyStringWrapper(dt.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
+        });
+
+        colAllAppStatus.setCellValueFactory(cell ->
+                new ReadOnlyStringWrapper(cell.getValue().getStatus()));
+
+        allAppointmentTable.setItems(allAppointmentList);
+    }
+
     private void loadAllData() throws SQLException {
         loadCustomers();
         loadMechanics();
         loadServiceTypes();
         loadParts();
         loadVehicles();
+        loadAllAppointments();
     }
 
     private void loadCustomers() {
@@ -206,6 +247,14 @@ public class AdminController implements Initializable {
             vehicleList.setAll(vehicleService.findAll());
         } catch (SQLException e) {
             showError("Failed to load the machine list:\n" + e.getMessage());
+        }
+    }
+
+    private void loadAllAppointments() {
+        try {
+            allAppointmentList.setAll(appointmentService.findAll());
+        } catch (SQLException e) {
+            showError("Failed to load all appointments:\n" + e.getMessage());
         }
     }
 
@@ -714,6 +763,65 @@ public class AdminController implements Initializable {
             loadVehicles();
         } catch (SQLException ex) {
             showError("Failed to delete the machine:\n" + ex.getMessage());
+        }
+    }
+
+    @FXML
+    private void onViewAppointmentDetails() {
+        Appointment selected = allAppointmentTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            Alert w = new Alert(Alert.AlertType.WARNING,
+                    "Please select an appointment from the list.", ButtonType.OK);
+            w.setTitle("No Selection");
+            w.showAndWait();
+            return;
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("/pti/datenbank/autowerk/appointment-details-dialog.fxml"));
+            Parent page = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Appointment Details");
+            dialogStage.initModality(Modality.WINDOW_MODAL);
+            dialogStage.initOwner(allAppointmentTable.getScene().getWindow()); // ✅ заменено
+            dialogStage.setScene(new Scene(page));
+
+            AppointmentDetailsController ctrl = loader.getController();
+            ctrl.setServices(authService);
+            ctrl.setAppointment(selected.getAppointmentId());
+            ctrl.setDialogStage(dialogStage);
+
+            dialogStage.showAndWait();
+        } catch (Exception ex) {
+            showError("Failed to open appointment details:\n" + ex.getMessage());
+        }
+    }
+
+    @FXML
+    private void onDeleteAppointment() {
+        Appointment selected = allAppointmentTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            Alert alert = new Alert(Alert.AlertType.WARNING);
+            alert.initOwner(allAppointmentTable.getScene().getWindow());
+            alert.setTitle("No Selection");
+            alert.setHeaderText("No appointment selected");
+            alert.setContentText("Please select an appointment to delete.");
+            alert.showAndWait();
+            return;
+        }
+
+        boolean confirmed = showConfirmation("Delete Appointment",
+                "Are you sure you want to delete the selected appointment?");
+
+        if (!confirmed) return;
+
+        try {
+            appointmentService.deleteAppointmentWithDependencies(selected.getAppointmentId());
+            loadAllAppointments(); // перезагружаем список
+        } catch (SQLException e) {
+            showError("Failed to delete appointment:\n" + e.getMessage());
         }
     }
 

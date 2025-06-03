@@ -54,6 +54,20 @@
                   prefRowCount="3"
                   prefColumnCount="30"
                   GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+
+        <!-- Строка 7: Part -->
+        <Label text="Parts Used:" GridPane.rowIndex="7" GridPane.columnIndex="0"
+               GridPane.valignment="TOP"/>
+        <TextArea fx:id="taParts"
+                  editable="false"
+                  wrapText="true"
+                  prefRowCount="3"
+                  prefColumnCount="30"
+                  GridPane.rowIndex="7" GridPane.columnIndex="1"/>
+
+        <!-- Строка 8: Total Price -->
+        <Label text="Total Price:" GridPane.rowIndex="8" GridPane.columnIndex="0"/>
+        <Label fx:id="lblTotalPrice" GridPane.rowIndex="8" GridPane.columnIndex="1"/>
     </GridPane>
 
     <!-- Кнопка Закрыть -->

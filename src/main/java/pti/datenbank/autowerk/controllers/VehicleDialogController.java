@@ -55,12 +55,7 @@ public class VehicleDialogController {
         tfPlate.setText(vehicle.getLicensePlate());
         tfYear.setText(String.valueOf(vehicle.getYear()));
 
-        cbCustomer.getSelectionModel().select(vehicle.getCustomer());
-
-        User current = authService.getCurrentUser();
-        if (current.getRole().getRoleName().equals("Customer")) {
-            cbCustomer.setDisable(true);
-        }
+        // выбор владельца будет произведён после загрузки ComboBox в loadCustomersIntoComboBox
     }
 
     public boolean isOkClicked() {
@@ -115,8 +110,14 @@ public class VehicleDialogController {
                 }
             });
 
-            if ("Customer".equals(roleName) && !customerList.isEmpty()) {
-                cbCustomer.getSelectionModel().selectFirst();
+            // корректно выбираем владельца, если редактируем машину
+            if (vehicle != null && vehicle.getCustomer() != null) {
+                for (Customer c : customerList) {
+                    if (c.getCustomerId() == vehicle.getCustomer().getCustomerId()) {
+                        cbCustomer.getSelectionModel().select(c);
+                        break;
+                    }
+                }
             }
 
         } catch (SQLException ex) {

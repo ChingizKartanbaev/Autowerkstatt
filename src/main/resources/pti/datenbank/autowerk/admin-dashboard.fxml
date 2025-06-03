@@ -127,6 +127,28 @@
                         </VBox>
                     </content>
                 </Tab>
+                <Tab text="All Appointments">
+                    <content>
+                        <VBox spacing="10">
+                            <padding><Insets top="10" right="10" bottom="10" left="10"/></padding>
+
+                            <HBox spacing="10">
+                                <Button text="View Details" onAction="#onViewAppointmentDetails"/>
+                                <Button text="Delete Appointment" onAction="#onDeleteAppointment"/>
+                            </HBox>
+                            <TableView fx:id="allAppointmentTable" prefHeight="400" prefWidth="780">
+                                <columns>
+                                    <TableColumn fx:id="colAllAppId" text="ID" prefWidth="50"/>
+                                    <TableColumn fx:id="colAllAppVehicle" text="Vehicle" prefWidth="150"/>
+                                    <TableColumn fx:id="colAllAppCustomer" text="Customer" prefWidth="150"/>
+                                    <TableColumn fx:id="colAllAppMechanic" text="Mechanic" prefWidth="150"/>
+                                    <TableColumn fx:id="colAllAppDateTime" text="Date/Time" prefWidth="150"/>
+                                    <TableColumn fx:id="colAllAppStatus" text="Status" prefWidth="100"/>
+                                </columns>
+                            </TableView>
+                        </VBox>
+                    </content>
+                </Tab>
             </tabs>
         </TabPane>
     </center>
