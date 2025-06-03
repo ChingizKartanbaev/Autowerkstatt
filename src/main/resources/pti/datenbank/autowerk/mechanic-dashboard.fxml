@@ -36,6 +36,7 @@
                             <HBox spacing="10">
                                 <Button text="Refresh"       onAction="#onRefreshAppointments"/>
                                 <Button text="Add Part"      onAction="#onAddPartToAppointment"/>
+                                <Button text="Change Status" onAction="#onChangeStatus"/>
                             </HBox>
                             <TableView fx:id="appointmentTable" prefHeight="400" prefWidth="780">
                                 <columns>

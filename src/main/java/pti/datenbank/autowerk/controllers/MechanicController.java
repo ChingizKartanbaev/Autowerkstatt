@@ -155,7 +155,11 @@ public class MechanicController {
 
                 List<Appointment> list = appointmentFacade.findByMechanicId(mechId);
 
-                appointmentList.setAll(list);
+                List<Appointment> activeAppointments = list.stream()
+                        .filter(ap -> !"CANCELLED".equalsIgnoreCase(ap.getStatus()))
+                        .toList();
+
+                appointmentList.setAll(activeAppointments);
             }
         } catch (SQLException ex) {
             showError("Failed to load your assigned records:\n" + ex.getMessage());
@@ -214,6 +218,33 @@ public class MechanicController {
     private void onExit(ActionEvent event) {
         Stage stage = (Stage) exitMenu.getParentPopup().getOwnerWindow();
         stage.close();
+    }
+
+    @FXML
+    private void onChangeStatus() {
+        Appointment selected = appointmentTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            new Alert(Alert.AlertType.WARNING, "Выберите запись из таблицы.", ButtonType.OK).showAndWait();
+            return;
+        }
+
+        ChoiceDialog<String> dialog = new ChoiceDialog<>(selected.getStatus(),
+                FXCollections.observableArrayList("PENDING", "IN_PROGRESS", "DONE"));
+        dialog.setTitle("Изменение статуса");
+        dialog.setHeaderText("Изменить статус записи ID=" + selected.getAppointmentId());
+        dialog.setContentText("Новый статус:");
+
+        dialog.showAndWait().ifPresent(newStatus -> {
+            if (!newStatus.equals(selected.getStatus())) {
+                try {
+                    selected.setStatus(newStatus);
+                    appointmentFacade.updateAppointmentWithServices(selected, selected.getServices());
+                    loadMyAppointments();
+                } catch (SQLException e) {
+                    showError("Не удалось обновить статус:\n" + e.getMessage());
+                }
+            }
+        });
     }
 
     @FXML

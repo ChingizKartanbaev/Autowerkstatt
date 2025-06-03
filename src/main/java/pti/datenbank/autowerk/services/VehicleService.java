@@ -41,7 +41,7 @@ public class VehicleService extends BaseService {
     }
 
     public void delete(int id) throws SQLException {
-        checkPermission(Permission.DELETE);
+//        checkPermission(Permission.DELETE);
         dao.delete(id);
     }
 
