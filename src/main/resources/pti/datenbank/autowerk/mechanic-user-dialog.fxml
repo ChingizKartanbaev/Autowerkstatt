@@ -24,8 +24,8 @@
     <Label text="Full Name"/>
     <TextField fx:id="tfFullName"/>
 
-    <Label text="Specialty"/>
-    <TextField fx:id="tfSpecialty"/>
+    <Label text="Speciality:"/>
+    <ComboBox fx:id="cbSpeciality" prefWidth="200"/>
 
     <!-- Кнопки OK / Cancel -->
     <HBox spacing="10" alignment="CENTER_RIGHT">

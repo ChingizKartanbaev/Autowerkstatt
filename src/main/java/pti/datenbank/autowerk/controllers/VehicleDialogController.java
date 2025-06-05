@@ -55,7 +55,12 @@ public class VehicleDialogController {
         tfPlate.setText(vehicle.getLicensePlate());
         tfYear.setText(String.valueOf(vehicle.getYear()));
 
-        // выбор владельца будет произведён после загрузки ComboBox в loadCustomersIntoComboBox
+    }
+
+    public void setFixedCustomer(Customer customer) {
+        cbCustomer.getItems().setAll(customer);
+        cbCustomer.getSelectionModel().selectFirst();
+        cbCustomer.setDisable(true);
     }
 
     public boolean isOkClicked() {
@@ -67,20 +72,22 @@ public class VehicleDialogController {
         String roleName = current.getRole().getRoleName();
 
         try {
+            customerList.clear();
+
             if ("Admin".equals(roleName)) {
                 List<Customer> all = customerService.findAll();
                 customerList.setAll(all);
-            }
-            else if ("Customer".equals(roleName)) {
+                cbCustomer.setDisable(false);
+            } else if ("Customer".equals(roleName)) {
                 Customer self = customerService.findByUserId(current.getUserId());
-                customerList.clear();
                 if (self != null) {
                     customerList.add(self);
+                    cbCustomer.setDisable(true);
+                    cbCustomer.getSelectionModel().selectFirst(); // ⬅️ обязательно!
+                } else {
+                    System.out.println("⚠️ Customer not found for current user");
                 }
-                cbCustomer.setDisable(true);
-            }
-            else {
-                customerList.clear();
+            } else {
                 cbCustomer.setDisable(true);
             }
 
@@ -110,7 +117,7 @@ public class VehicleDialogController {
                 }
             });
 
-            // корректно выбираем владельца, если редактируем машину
+            // Если редактируем — выделить нужного клиента
             if (vehicle != null && vehicle.getCustomer() != null) {
                 for (Customer c : customerList) {
                     if (c.getCustomerId() == vehicle.getCustomer().getCustomerId()) {

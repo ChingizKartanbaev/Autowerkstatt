@@ -1,35 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.PasswordField?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 
 <VBox xmlns:fx="http://javafx.com/fxml"
       fx:controller="pti.datenbank.autowerk.controllers.AuthController"
       alignment="CENTER"
-      spacing="10">
-    <!-- Явное задание padding через Insets -->
+      spacing="20"
+      prefWidth="500"
+      prefHeight="400"
+      style="-fx-background-color: #f9f9f9;">
+
     <padding>
-        <Insets top="20" right="20" bottom="20" left="20"/>
+        <Insets top="50" right="40" bottom="50" left="40"/>
     </padding>
 
     <Label text="Autowerk"
-           style="-fx-font-size: 24px; -fx-font-weight: bold;"/>
+           style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;"/>
 
     <TextField fx:id="usernameField"
                promptText="Username"
-               prefWidth="200"/>
+               prefWidth="300"
+               style="-fx-background-radius: 6; -fx-border-radius: 6;"/>
 
     <PasswordField fx:id="passwordField"
                    promptText="Password"
-                   prefWidth="200"/>
+                   prefWidth="300"
+                   style="-fx-background-radius: 6; -fx-border-radius: 6;"/>
 
     <Button text="Login"
             onAction="#handleLogin"
-            prefWidth="100"/>
+            prefWidth="180"
+            style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-background-radius: 6;"/>
 
     <Label fx:id="errorLabel"
-           textFill="red"/>
+           textFill="red"
+           style="-fx-font-size: 12px;"/>
 </VBox>

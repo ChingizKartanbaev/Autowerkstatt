@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<database>
+  <table name="AppointmentParts"/>
+  <table name="Appointments"/>
+  <table name="AppointmentServices"/>
+  <table name="Customers">
+    <row>
+      <CustomerID>1</CustomerID>
+      <UserID>2</UserID>
+      <FullName>Aiana Sagynbekova</FullName>
+      <Phone>111</Phone>
+      <Address>Innere Sch.</Address>
+    </row>
+    <row>
+      <CustomerID>2</CustomerID>
+      <UserID>4</UserID>
+      <FullName>Chingiz Kartanbaev</FullName>
+      <Phone>015510015500</Phone>
+      <Address>Hauptstrasse 4</Address>
+    </row>
+    <row>
+      <CustomerID>3</CustomerID>
+      <UserID>5</UserID>
+      <FullName>Bermet Zulfibaeva</FullName>
+      <Phone>015510015200</Phone>
+      <Address>Berliner Str. 2</Address>
+    </row>
+  </table>
+  <table name="Mechanics">
+    <row>
+      <MechanicID>1</MechanicID>
+      <UserID>3</UserID>
+      <FullName>Mr Brown</FullName>
+      <Speciality>Motors</Speciality>
+    </row>
+  </table>
+  <table name="Parts">
+    <row>
+      <PartID>1</PartID>
+      <CreatedByUserID>1</CreatedByUserID>
+      <Name>Oil Filter</Name>
+      <Manufacturer>Bosch</Manufacturer>
+      <UnitPrice>10.00</UnitPrice>
+      <InStockQty>0</InStockQty>
+    </row>
+    <row>
+      <PartID>2</PartID>
+      <CreatedByUserID>1</CreatedByUserID>
+      <Name>Brake Pad Set</Name>
+      <Manufacturer>Brembo</Manufacturer>
+      <UnitPrice>45.00</UnitPrice>
+      <InStockQty>20</InStockQty>
+    </row>
+    <row>
+      <PartID>3</PartID>
+      <CreatedByUserID>3</CreatedByUserID>
+      <Name>Air Filter</Name>
+      <Manufacturer>Mann-Filter</Manufacturer>
+      <UnitPrice>15.00</UnitPrice>
+      <InStockQty>40</InStockQty>
+    </row>
+    <row>
+      <PartID>4</PartID>
+      <CreatedByUserID>3</CreatedByUserID>
+      <Name>Spark Plug</Name>
+      <Manufacturer>NGK</Manufacturer>
+      <UnitPrice>8.00</UnitPrice>
+      <InStockQty>45</InStockQty>
+    </row>
+    <row>
+      <PartID>5</PartID>
+      <CreatedByUserID>2</CreatedByUserID>
+      <Name>motor</Name>
+      <Manufacturer>Bosch</Manufacturer>
+      <UnitPrice>100.00</UnitPrice>
+      <InStockQty>0</InStockQty>
+    </row>
+    <row>
+      <PartID>6</PartID>
+      <CreatedByUserID>4</CreatedByUserID>
+      <Name>motor</Name>
+      <Manufacturer>Bosch</Manufacturer>
+      <UnitPrice>100.00</UnitPrice>
+      <InStockQty>1</InStockQty>
+    </row>
+  </table>
+  <table name="Roles">
+    <row>
+      <RoleID>1</RoleID>
+      <RoleName>Admin</RoleName>
+    </row>
+    <row>
+      <RoleID>2</RoleID>
+      <RoleName>Customer</RoleName>
+    </row>
+    <row>
+      <RoleID>3</RoleID>
+      <RoleName>Mechanic</RoleName>
+    </row>
+  </table>
+  <table name="ServiceTypes">
+    <row>
+      <ServiceTypeID>1</ServiceTypeID>
+      <CreatedByUserID>1</CreatedByUserID>
+      <Name>Oil Change</Name>
+      <Description>Complete replacement of engine oil and oil filter</Description>
+      <BasePrice>100.00</BasePrice>
+    </row>
+    <row>
+      <ServiceTypeID>2</ServiceTypeID>
+      <CreatedByUserID>1</CreatedByUserID>
+      <Name>Wheel Alignment &amp; Balancing</Name>
+      <Description>Alignment and balancing of all four wheels</Description>
+      <BasePrice>150.00</BasePrice>
+    </row>
+    <row>
+      <ServiceTypeID>3</ServiceTypeID>
+      <CreatedByUserID>3</CreatedByUserID>
+      <Name>Engine Diagnostics</Name>
+      <Description>Computer diagnostics of the engine system</Description>
+      <BasePrice>200.00</BasePrice>
+    </row>
+  </table>
+  <table name="Users">
+    <row>
+      <UserID>1</UserID>
+      <RoleID>1</RoleID>
+      <Username>admin</Username>
+      <Password>admin123</Password>
+      <Email>admin@autowerk.local</Email>
+      <CreatedAt>2025-06-03 02:21:59.243</CreatedAt>
+    </row>
+    <row>
+      <UserID>2</UserID>
+      <RoleID>2</RoleID>
+      <Username>jdoe</Username>
+      <Password>pass123</Password>
+      <Email>jdoe@example.com</Email>
+      <CreatedAt>2025-06-03 02:21:59.243</CreatedAt>
+    </row>
+    <row>
+      <UserID>3</UserID>
+      <RoleID>3</RoleID>
+      <Username>mbrown</Username>
+      <Password>mechpass</Password>
+      <Email>mbrown@example.com</Email>
+      <CreatedAt>2025-06-03 02:21:59.243</CreatedAt>
+    </row>
+    <row>
+      <UserID>4</UserID>
+      <RoleID>2</RoleID>
+      <Username>operans</Username>
+      <Password>123</Password>
+      <Email>kartanbaev@gmail.com</Email>
+      <CreatedAt>2025-06-03 20:16:36.47</CreatedAt>
+    </row>
+    <row>
+      <UserID>5</UserID>
+      <RoleID>2</RoleID>
+      <Username>bermetz</Username>
+      <Password>123</Password>
+      <Email>bermet@gmail.com</Email>
+      <CreatedAt>2025-06-03 20:54:00.123</CreatedAt>
+    </row>
+  </table>
+  <table name="Vehicles">
+    <row>
+      <VehicleID>2</VehicleID>
+      <CustomerID>2</CustomerID>
+      <LicensePlate>222</LicensePlate>
+      <Make>Tesla</Make>
+      <Model>Y</Model>
+      <Year>2025</Year>
+    </row>
+    <row>
+      <VehicleID>4</VehicleID>
+      <CustomerID>3</CustomerID>
+      <LicensePlate>325643</LicensePlate>
+      <Make>VW</Make>
+      <Model>Polo</Model>
+      <Year>2025</Year>
+    </row>
+    <row>
+      <VehicleID>5</VehicleID>
+      <CustomerID>1</CustomerID>
+      <LicensePlate>11111</LicensePlate>
+      <Make>Tesla</Make>
+      <Model>XX</Model>
+      <Year>2020</Year>
+    </row>
+    <row>
+      <VehicleID>6</VehicleID>
+      <CustomerID>1</CustomerID>
+      <LicensePlate>47829</LicensePlate>
+      <Make>BMW</Make>
+      <Model>X5</Model>
+      <Year>2019</Year>
+    </row>
+    <row>
+      <VehicleID>7</VehicleID>
+      <CustomerID>3</CustomerID>
+      <LicensePlate>9497</LicensePlate>
+      <Make>BMW</Make>
+      <Model>E34</Model>
+      <Year>2000</Year>
+    </row>
+    <row>
+      <VehicleID>9</VehicleID>
+      <CustomerID>1</CustomerID>
+      <LicensePlate>7839</LicensePlate>
+      <Make>Porsche</Make>
+      <Model>Taycan</Model>
+      <Year>2022</Year>
+    </row>
+  </table>
+</database>

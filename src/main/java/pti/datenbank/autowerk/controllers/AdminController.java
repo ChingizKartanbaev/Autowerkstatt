@@ -16,6 +16,8 @@ import javafx.scene.control.TableView;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import pti.datenbank.autowerk.HelloApplication;
+import pti.datenbank.autowerk.dao.DBConnection;
+import pti.datenbank.autowerk.dao.DatabaseExporter;
 import pti.datenbank.autowerk.models.*;
 import pti.datenbank.autowerk.services.AppointmentService;
 import pti.datenbank.autowerk.services.AuthService;
@@ -28,6 +30,7 @@ import pti.datenbank.autowerk.services.facade.UserFacade;
 
 import java.math.BigDecimal;
 import java.net.URL;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
@@ -69,6 +72,7 @@ public class AdminController implements Initializable {
     @FXML private TableView<Part> partTable;
     @FXML private TableColumn<Part, Integer> colPartId;
     @FXML private TableColumn<Part, String> colPartName;
+    @FXML private TableColumn<Part, String> colPartManufacturer;
     @FXML private TableColumn<Part, java.math.BigDecimal> colPartUnitPrice;
     @FXML private TableColumn<Part, Integer> colPartInStockQty;
 
@@ -152,6 +156,7 @@ public class AdminController implements Initializable {
     private void initPartTable() {
         colPartId.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getPartId()));
         colPartName.setCellValueFactory(cell -> new ReadOnlyStringWrapper(cell.getValue().getName()));
+        colPartManufacturer.setCellValueFactory(cell -> new ReadOnlyStringWrapper(cell.getValue().getManufacturer()));
         colPartUnitPrice.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getUnitPrice()));
         colPartInStockQty.setCellValueFactory(cell -> new ReadOnlyObjectWrapper<>(cell.getValue().getInStockQty()));
         partTable.setItems(partList);
@@ -824,6 +829,22 @@ public class AdminController implements Initializable {
             showError("Failed to delete appointment:\n" + e.getMessage());
         }
     }
+
+    @FXML
+    private void onExportXml() {
+        try {
+            String filePath = "export/database_export.xml";
+            DatabaseExporter.exportToXml(filePath);
+            Alert alert = new Alert(Alert.AlertType.INFORMATION, "Export completed successfully:\n" + filePath, ButtonType.OK);
+            alert.setTitle("Export Finished");
+            alert.showAndWait();
+        } catch (Exception e) {
+            Alert error = new Alert(Alert.AlertType.ERROR, "An error occurred during export:\n" + e.getMessage(), ButtonType.OK);
+            error.setTitle("Export Failed");
+            error.showAndWait();
+        }
+    }
+
 
     @FXML private void onLogout() {
         authService.logout();

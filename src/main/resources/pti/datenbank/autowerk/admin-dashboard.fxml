@@ -9,6 +9,7 @@
     <top>
         <MenuBar>
             <Menu text="File">
+                <MenuItem text="Export to XML" onAction="#onExportXml"/>
                 <MenuItem text="Logout" onAction="#onLogout"/>
                 <MenuItem text="Exit" onAction="#onExit"/>
             </Menu>
@@ -90,6 +91,7 @@
                             </padding>
                             <HBox spacing="10">
                                 <Button text="Add Part" onAction="#onAddPart"/>
+                                <Button text="Edit Part" onAction="#onEditPart"/>
                             </HBox>
                             <TableView fx:id="partTable" prefHeight="400">
                                 <columns>

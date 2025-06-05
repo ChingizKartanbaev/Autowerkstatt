@@ -1,0 +1,32 @@
+.button {
+    -fx-font-size: 11px;
+    -fx-padding: 4 10;
+    -fx-background-radius: 5;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+/* Зеленая кнопка: добавление */
+.button-green {
+    -fx-background-color: #4CAF50;
+}
+.button-green:hover {
+    -fx-background-color: #45A049;
+}
+
+/* Желтая кнопка: редактирование */
+.button-yellow {
+    -fx-background-color: #FFC107;
+    -fx-text-fill: black;
+}
+.button-yellow:hover {
+    -fx-background-color: #e0a800;
+}
+
+/* Красная кнопка: удаление */
+.button-red {
+    -fx-background-color: #f44336;
+}
+.button-red:hover {
+    -fx-background-color: #d32f2f;
+}

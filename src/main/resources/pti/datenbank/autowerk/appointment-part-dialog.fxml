@@ -11,7 +11,7 @@
         <Insets top="15" right="15" bottom="15" left="15"/>
     </padding>
 
-    <Label text="Добавить запчасть к записи" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+    <Label text="Add part to appointment" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
 
     <GridPane hgap="10" vgap="10">
         <padding>
@@ -27,7 +27,7 @@
         <!-- Строка 1: Количество -->
         <Label text="Quantity:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
         <TextField fx:id="tfQuantity"
-                   promptText="Введите целое число"
+                   promptText="Enter an integer"
                    prefWidth="100"
                    GridPane.rowIndex="1" GridPane.columnIndex="1"/>
     </GridPane>

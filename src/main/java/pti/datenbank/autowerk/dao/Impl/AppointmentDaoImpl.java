@@ -8,6 +8,8 @@ import pti.datenbank.autowerk.models.Mechanic;
 import pti.datenbank.autowerk.models.Vehicle;
 
 import java.sql.*;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -139,6 +141,31 @@ public class AppointmentDaoImpl implements AppointmentDao {
             }
         }
         return 0;
+    }
+
+    @Override
+    public boolean isMechanicAvailable(int mechanicId, LocalDateTime time) throws SQLException {
+        LocalTime t = time.toLocalTime();
+        if (t.isBefore(LocalTime.of(9, 0)) || t.isAfter(LocalTime.of(16, 0))) {
+            return false;
+        }
+
+        String sql = """
+        SELECT COUNT(*) 
+        FROM Appointments 
+        WHERE MechanicID = ? 
+          AND ABS(DATEDIFF(minute, ScheduledAt, ?)) < 60
+          AND Status NOT IN ('COMPLETED', 'CANCELLED')
+    """;
+
+        try (Connection c = DBConnection.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setInt(1, mechanicId);
+            ps.setTimestamp(2, Timestamp.valueOf(time));
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) == 0;
+            }
+        }
     }
 
     private Appointment mapRow(ResultSet rs) throws SQLException {

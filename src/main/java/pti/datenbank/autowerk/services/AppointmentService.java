@@ -12,6 +12,10 @@ import pti.datenbank.autowerk.models.Appointment;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class AppointmentService extends BaseService {
@@ -101,4 +105,21 @@ public class AppointmentService extends BaseService {
             }
         }
     }
+
+    public boolean isMechanicAvailable(int mechanicId, LocalDateTime time) throws SQLException {
+        checkPermission(Permission.READ);
+        return appointmentDao.isMechanicAvailable(mechanicId, time);
+    }
+
+    public List<LocalTime> findAvailableSlots(int mechanicId, LocalDate date) throws SQLException {
+        List<LocalTime> available = new ArrayList<>();
+        for (int hour = 9; hour <= 16; hour++) { // 9 to 16 — последний возможный час начала
+            LocalDateTime candidate = date.atTime(hour, 0);
+            if (isMechanicAvailable(mechanicId, candidate)) {
+                available.add(candidate.toLocalTime());
+            }
+        }
+        return available;
+    }
+
 }

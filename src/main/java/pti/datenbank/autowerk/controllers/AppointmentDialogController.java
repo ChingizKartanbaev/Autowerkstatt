@@ -189,16 +189,16 @@ public class AppointmentDialogController implements Initializable {
         String timeText = tfTime.getText().trim();
 
         if (selVeh == null) {
-            err.append("– select a car\n");
+            err.append("– Select a vehicle\n");
         }
         if (selMech == null) {
-            err.append("– select a mechanic\n");
+            err.append("– Select a mechanic\n");
         }
         if (date == null) {
-            err.append("– select a date\n");
+            err.append("– Select a date\n");
         }
         if (timeText.isEmpty()) {
-            err.append("– enter the time (HH:mm)\n");
+            err.append("– Enter time (HH:mm)\n");
         } else {
             try {
                 LocalTime.parse(timeText, DateTimeFormatter.ofPattern("HH:mm"));
@@ -211,7 +211,7 @@ public class AppointmentDialogController implements Initializable {
             Alert warning = new Alert(Alert.AlertType.WARNING);
             warning.initOwner(dialogStage);
             warning.setTitle("Incorrect data");
-            warning.setHeaderText("Please correct:");
+            warning.setHeaderText("Please correct the following:");
             warning.setContentText(err.toString());
             warning.showAndWait();
             return;
@@ -221,10 +221,41 @@ public class AppointmentDialogController implements Initializable {
         LocalDateTime scheduled = LocalDateTime.of(date, time);
 
         try {
+            boolean isAvailable = appointmentService.isMechanicAvailable(selMech.getMechanicId(), scheduled);
+            if (!isAvailable) {
+                // Найти ближайшие доступные временные слоты в этот день
+                List<LocalTime> suggestions = appointmentService.findAvailableSlots(selMech.getMechanicId(), date);
+
+                StringBuilder msg = new StringBuilder("Selected mechanic is not available at this time.\n");
+                msg.append("Appointments must be:\n• Between 09:00 and 17:00\n• At least 1 hour apart.\n\n");
+
+                if (suggestions.isEmpty()) {
+                    msg.append("No available time slots left for this day.");
+                } else {
+                    msg.append("Available times:\n");
+                    for (LocalTime t : suggestions) {
+                        msg.append("• ").append(t.toString()).append("\n");
+                    }
+                }
+
+                Alert alert = new Alert(Alert.AlertType.WARNING);
+                alert.initOwner(dialogStage);
+                alert.setTitle("Mechanic Unavailable");
+                alert.setHeaderText("Please choose another time");
+                alert.setContentText(msg.toString());
+                alert.showAndWait();
+                return;
+            }
+        } catch (SQLException e) {
+            showError("Failed to check mechanic availability:\n" + e.getMessage());
+            return;
+        }
+
+        try {
             if (appointment == null) {
                 Appointment newApp = new Appointment();
-                newApp.setCustomer( new CustomerService(authService)
-                        .findByUserId(authService.getCurrentUser().getUserId()) );
+                newApp.setCustomer(new CustomerService(authService)
+                        .findByUserId(authService.getCurrentUser().getUserId()));
                 newApp.setVehicle(selVeh);
                 newApp.setMechanic(selMech);
                 newApp.setScheduledAt(scheduled);
@@ -247,9 +278,10 @@ public class AppointmentDialogController implements Initializable {
             okClicked = true;
             dialogStage.close();
         } catch (SQLException ex) {
-            showError("Error when saving a record:\n" + ex.getMessage());
+            showError("Error when saving appointment:\n" + ex.getMessage());
         }
     }
+
 
     @FXML
     private void handleCancel() {

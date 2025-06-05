@@ -87,93 +87,87 @@ CREATE TABLE AppointmentParts (
                                   PRIMARY KEY (AppointmentID, PartID)
 );
 
-
+-- 1. Роли
 INSERT INTO Roles (RoleName) VALUES
                                  ('Admin'),
                                  ('Customer'),
                                  ('Mechanic');
 GO
 
--- 2. Вставка пользователей
+-- 2. Пользователи
 INSERT INTO Users (RoleID, Username, Password, Email) VALUES
 ((SELECT RoleID FROM Roles WHERE RoleName = 'Admin'),
-    'admin',          -- логин администратора
-    'admin123',       -- пароль (в проде — хэш!)
-    'admin@autowerk.local'),
+ 'admin', 'admin123', 'admin@autowerk.local'),
 ((SELECT RoleID FROM Roles WHERE RoleName = 'Customer'),
-    'jdoe',           -- логин клиента
-    'pass123',
-    'jdoe@example.com'),
+ 'jdoe', 'pass123', 'jdoe@example.com'),
+((SELECT RoleID FROM Roles WHERE RoleName = 'Customer'),
+ 'asmith', 'cust456', 'asmith@example.com'),
 ((SELECT RoleID FROM Roles WHERE RoleName = 'Mechanic'),
-    'mbrown',         -- логин механика
-    'mechpass',
-    'mbrown@example.com');
+ 'mbrown', 'mechpass', 'mbrown@example.com'),
+((SELECT RoleID FROM Roles WHERE RoleName = 'Mechanic'),
+ 'jblack', 'fixit789', 'jblack@example.com');
 GO
 
+-- 3. Клиенты
 INSERT INTO Customers(UserID, FullName, Phone, Address) VALUES
-((SELECT UserID FROM Users WHERE RoleID = 2),
-'John Doe',
-'123',
-'HZ'
-);
+((SELECT TOP 1 UserID FROM Users WHERE Username = 'jdoe'),
+ 'John Doe', '456-789-1234', '123 Elm Street'),
+((SELECT TOP 1 UserID FROM Users WHERE Username = 'asmith'),
+ 'Alice Smith', '456-789-1234', '123 Elm Street');
 GO
 
+-- 4. Механики
 INSERT INTO Mechanics(UserID, FullName, Speciality) VALUES
-((SELECT UserID FROM Users WHERE RoleID = 3),
-'Mr Brown',
-'Motors');
+((SELECT TOP 1 UserID FROM Users WHERE Username = 'mbrown'),
+ 'Mr Brown', 'Transmission'),
+((SELECT TOP 1 UserID FROM Users WHERE Username = 'jblack'),
+ 'James Black', 'Engine');
 GO
 
--- Заполнение таблицы ServiceTypes
+-- 5. Виды услуг
 INSERT INTO ServiceTypes (CreatedByUserID, Name, Description, BasePrice) VALUES
-    (
-        (SELECT UserID FROM Users WHERE Username = 'admin'),
-        N'Oil Change',
-        N'Полная замена моторного масла и масляного фильтра',
-        100.00
-    ),
-    (
-        (SELECT UserID FROM Users WHERE Username = 'admin'),
-        N'Wheel Alignment & Balancing',
-        N'Сход-развал и балансировка всех четырёх колёс',
-        150.00
-    ),
-    (
-        (SELECT UserID FROM Users WHERE Username = 'mbrown'),
-        N'Engine Diagnostics',
-        N'Компьютерная диагностика системы двигателя',
-        200.00
-    );
+((SELECT TOP 1 UserID FROM Users WHERE Username = 'admin'),
+ N'Oil Change', N'Complete change of engine oil and oil filter', 100.00),
+((SELECT TOP 1 UserID FROM Users WHERE Username = 'admin'),
+ N'Wheel Alignment & Balancing', N'Four-wheel alignment and balancing of all four wheels', 150.00),
+((SELECT TOP 1 UserID FROM Users WHERE Username = 'mbrown'),
+ N'Engine Diagnostics', N'Computer diagnostics of the engine system', 200.00),
+((SELECT TOP 1 UserID FROM Users WHERE Username = 'admin'),
+ N'Brake Inspection', N'Checking the condition of the brake systems', 80.00),
+((SELECT TOP 1 UserID FROM Users WHERE Username = 'jblack'),
+ N'Battery Replacement', N'Battery replacement', 120.00);
 GO
 
--- Заполнение таблицы Parts
+-- 6. Запчасти
 INSERT INTO Parts (CreatedByUserID, Name, Manufacturer, UnitPrice, InStockQty) VALUES
-    (
-        (SELECT UserID FROM Users WHERE Username = 'admin'),
-        N'Oil Filter',
-        N'Bosch',
-        10.00,
-        50
-    ),
-    (
-        (SELECT UserID FROM Users WHERE Username = 'admin'),
-        N'Brake Pad Set',
-        N'Brembo',
-        45.00,
-        30
-    ),
-    (
-        (SELECT UserID FROM Users WHERE Username = 'mbrown'),
-        N'Air Filter',
-        N'Mann-Filter',
-        15.00,
-        40
-    ),
-    (
-        (SELECT UserID FROM Users WHERE Username = 'mbrown'),
-        N'Spark Plug',
-        N'NGK',
-        8.00,
-        100
-    );
+((SELECT TOP 1 UserID FROM Users WHERE Username = 'admin'),
+ N'Oil Filter', N'Bosch', 10.00, 50),
+((SELECT TOP 1 UserID FROM Users WHERE Username = 'admin'),
+ N'Brake Pad Set', N'Brembo', 45.00, 30),
+((SELECT TOP 1 UserID FROM Users WHERE Username = 'mbrown'),
+ N'Air Filter', N'Mann-Filter', 15.00, 40),
+((SELECT TOP 1 UserID FROM Users WHERE Username = 'mbrown'),
+ N'Spark Plug', N'NGK', 8.00, 100),
+((SELECT TOP 1 UserID FROM Users WHERE Username = 'jblack'),
+ N'Battery 60Ah', N'Varta', 90.00, 20),
+((SELECT TOP 1 UserID FROM Users WHERE Username = 'admin'),
+ N'Engine Oil 5W-30', N'Mobil', 35.00, 60);
+GO
+
+-- 7. Машины John Doe
+INSERT INTO Vehicles (CustomerID, LicensePlate, Make, Model, Year) VALUES
+((SELECT TOP 1 CustomerID FROM Customers WHERE FullName = N'John Doe'),
+ N'1232', N'Tesla', N'Y', 2021),
+((SELECT TOP 1 CustomerID FROM Customers WHERE FullName = N'John Doe'),
+ N'1234', N'Tesla', N'X', 2020),
+((SELECT TOP 1 CustomerID FROM Customers WHERE FullName = N'John Doe'),
+ N'AB123CD', N'BMW', N'X5', 2019);
+GO
+
+-- 8. Машины Alice Smith
+INSERT INTO Vehicles (CustomerID, LicensePlate, Make, Model, Year) VALUES
+((SELECT TOP 1 CustomerID FROM Customers WHERE FullName = N'Alice Smith'),
+ N'XYZ123', N'Toyota', N'Corolla', 2017),
+((SELECT TOP 1 CustomerID FROM Customers WHERE FullName = N'Alice Smith'),
+ N'ABC789', N'Mercedes', N'C200', 2018);
 GO

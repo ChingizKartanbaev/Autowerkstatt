@@ -275,6 +275,9 @@ public class CustomerController implements Initializable {
             ctrl.setServices(authService, vehicleService, customerService);
             ctrl.setDialogStage(dialogStage);
 
+            Customer currentCustomer = customerService.findByUserId(authService.getCurrentUser().getUserId());
+            ctrl.setFixedCustomer(currentCustomer);
+
             dialogStage.showAndWait();
 
             if (ctrl.isOkClicked()) {
@@ -312,6 +315,12 @@ public class CustomerController implements Initializable {
             ctrl.setServices(authService, vehicleService, customerService);
             ctrl.setDialogStage(dialogStage);
             ctrl.setVehicle(selected);
+
+            User current = authService.getCurrentUser();
+            if ("Customer".equals(current.getRole().getRoleName())) {
+                Customer currentCustomer = customerService.findByUserId(current.getUserId());
+                ctrl.setFixedCustomer(currentCustomer);
+            }
 
             dialogStage.showAndWait();
 

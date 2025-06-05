@@ -254,15 +254,15 @@ public class MechanicController {
     private void onChangeStatus() {
         Appointment selected = appointmentTable.getSelectionModel().getSelectedItem();
         if (selected == null) {
-            new Alert(Alert.AlertType.WARNING, "Выберите запись из таблицы.", ButtonType.OK).showAndWait();
+            new Alert(Alert.AlertType.WARNING, "Choose appointment from the list.", ButtonType.OK).showAndWait();
             return;
         }
 
         ChoiceDialog<String> dialog = new ChoiceDialog<>(selected.getStatus(),
                 FXCollections.observableArrayList("PENDING", "IN_PROGRESS", "DONE"));
-        dialog.setTitle("Изменение статуса");
-        dialog.setHeaderText("Изменить статус записи ID=" + selected.getAppointmentId());
-        dialog.setContentText("Новый статус:");
+        dialog.setTitle("Change status");
+        dialog.setHeaderText("Change status for appointment ID=" + selected.getAppointmentId());
+        dialog.setContentText("New status:");
 
         dialog.showAndWait().ifPresent(newStatus -> {
             if (!newStatus.equals(selected.getStatus())) {
@@ -271,7 +271,7 @@ public class MechanicController {
                     appointmentFacade.updateAppointmentWithServices(selected, selected.getServices());
                     loadMyAppointments();
                 } catch (SQLException e) {
-                    showError("Не удалось обновить статус:\n" + e.getMessage());
+                    showError("Can not update a status:\n" + e.getMessage());
                 }
             }
         });
